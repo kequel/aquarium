@@ -2,16 +2,18 @@ package pl.edu.pg.eti.kask.aquarium.controller;
 
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
-import jakarta.servlet.ServletException;
+import jakarta.json.bind.JsonbException;
+import jakarta.inject.Inject;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import pl.edu.pg.eti.kask.aquarium.configuration.CreateServices;
 import pl.edu.pg.eti.kask.aquarium.exception.AlreadyExistsException;
 import pl.edu.pg.eti.kask.aquarium.exception.NotFoundException;
 import pl.edu.pg.eti.kask.aquarium.user.dto.GetUserResponse;
 import pl.edu.pg.eti.kask.aquarium.user.dto.GetUsersResponse;
+import pl.edu.pg.eti.kask.aquarium.user.dto.PostUserRequest;
+import pl.edu.pg.eti.kask.aquarium.user.entity.User;
 import pl.edu.pg.eti.kask.aquarium.user.service.AvatarService;
 import pl.edu.pg.eti.kask.aquarium.user.service.UserService;
 
@@ -36,14 +38,13 @@ public class ApiServlet extends HttpServlet {
 
     private final Jsonb jsonb = JsonbBuilder.create();
 
-    private UserService userService;
-    private AvatarService avatarService;
+    /* The container creates servlets with the no-arg constructor, so CDI beans are injected into fields. */
 
-    @Override
-    public void init() throws ServletException {
-        userService = (UserService) getServletContext().getAttribute(CreateServices.USER_SERVICE);
-        avatarService = (AvatarService) getServletContext().getAttribute(CreateServices.AVATAR_SERVICE);
-    }
+    @Inject
+    private UserService userService;
+
+    @Inject
+    private AvatarService avatarService;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -74,6 +75,10 @@ public class ApiServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        if (USERS.matcher(path(request)).matches()) {
+            createUser(request, response);
+            return;
+        }
         Matcher matcher = USER_AVATAR.matcher(path(request));
         if (!matcher.matches()) {
             response.sendError(isKnown(request) ? HttpServletResponse.SC_METHOD_NOT_ALLOWED
@@ -117,6 +122,16 @@ public class ApiServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Matcher userMatcher = USER.matcher(path(request));
+        if (userMatcher.matches()) {
+            try {
+                userService.delete(UUID.fromString(userMatcher.group(1)));
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            } catch (NotFoundException ex) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, ex.getMessage());
+            }
+            return;
+        }
         Matcher matcher = USER_AVATAR.matcher(path(request));
         if (!matcher.matches()) {
             response.sendError(isKnown(request) ? HttpServletResponse.SC_METHOD_NOT_ALLOWED
@@ -129,6 +144,35 @@ public class ApiServlet extends HttpServlet {
         } catch (NotFoundException ex) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, ex.getMessage());
         }
+    }
+
+    /**
+     * Creates a user from a JSON body. Responds 201 with the new user's address in the Location header,
+     * 400 for a malformed body, 409 if the login is taken.
+     */
+    private void createUser(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        PostUserRequest body;
+        try {
+            body = jsonb.fromJson(request.getInputStream(), PostUserRequest.class);
+        } catch (JsonbException ex) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Malformed JSON body");
+            return;
+        }
+        if (body == null || body.login() == null || body.login().isBlank()) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Field 'login' is required");
+            return;
+        }
+        User user = body.toEntity();
+        try {
+            userService.create(user);
+        } catch (AlreadyExistsException ex) {
+            response.sendError(HttpServletResponse.SC_CONFLICT, ex.getMessage());
+            return;
+        }
+        String collection = request.getRequestURL().toString().replaceAll("/$", "");
+        response.setHeader("Location", collection + "/" + user.getId());
+        response.setStatus(HttpServletResponse.SC_CREATED);
+        writeJson(response, GetUserResponse.from(user));
     }
 
     private static String path(HttpServletRequest request) {

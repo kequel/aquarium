@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:8080/lab1/api
+@baseUrl = http://localhost:8080/lab2/api
 @userId = 81e1c2a9-7f57-439b-b53d-6db88b071e4e
 @unknownId = 00000000-0000-0000-0000-000000000000
 
@@ -64,3 +64,52 @@ DELETE {{baseUrl}}/users/{{userId}}/avatar
 
 ### Niedozwolona metoda na kolekcji -> 405
 DELETE {{baseUrl}}/users
+
+### Dodanie użytkownika -> 201, nagłówek Location, w treści nowy użytkownik
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "login": "nemo",
+  "email": "nemo@example.com",
+  "birthDate": "2003-05-30",
+  "role": "USER"
+}
+
+> {% client.global.set("newUserId", response.body.id); %}
+
+### Ponowne dodanie z tym samym loginem -> 409
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "login": "nemo",
+  "email": "inny@example.com",
+  "birthDate": "2003-05-30",
+  "role": "USER"
+}
+
+### Dodanie bez loginu -> 400
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "email": "bezloginu@example.com"
+}
+
+### Nowy użytkownik jest na liście -> 200 (5 użytkowników)
+GET {{baseUrl}}/users
+
+### Pobranie nowego użytkownika -> 200
+GET {{baseUrl}}/users/{{newUserId}}
+
+### Usunięcie nowego użytkownika -> 204
+DELETE {{baseUrl}}/users/{{newUserId}}
+
+### Pobranie usuniętego użytkownika -> 404
+GET {{baseUrl}}/users/{{newUserId}}
+
+### Ponowne usunięcie -> 404
+DELETE {{baseUrl}}/users/{{newUserId}}
+
+

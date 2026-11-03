@@ -13,12 +13,17 @@
         <param-value>jee-avatars</param-value>
     </context-param>
 
-    <!-- Listeners are invoked in declaration order: create components first, then seed data. -->
-    <listener>
-        <listener-class>pl.edu.pg.eti.kask.aquarium.configuration.CreateServices</listener-class>
-    </listener>
-    <listener>
-        <listener-class>pl.edu.pg.eti.kask.aquarium.configuration.InitializedData</listener-class>
-    </listener>
+    <!--
+        H2 database stored in a file (~/jee-aquarium-db.mv.db), started in embedded mode
+        together with the application server. AUTO_SERVER lets other tools (e.g. the IntelliJ
+        Database window) open the same file while the application is running.
+    -->
+    <data-source>
+        <name>java:app/jdbc/AquariumDS</name>
+        <class-name>org.h2.jdbcx.JdbcDataSource</class-name>
+        <url>jdbc:h2:file:~/jee-aquarium-db;AUTO_SERVER=TRUE</url>
+        <user>sa</user>
+        <password>sa</password>
+    </data-source>
 
 </web-app>

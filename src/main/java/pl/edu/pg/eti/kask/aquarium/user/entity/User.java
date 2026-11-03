@@ -1,21 +1,36 @@
 package pl.edu.pg.eti.kask.aquarium.user.entity;
 
-import pl.edu.pg.eti.kask.aquarium.fish.entity.Fish;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Application user. The relation to fish is intentionally omitted for now (lab 2).
+ */
+@Entity
+@Table(name = "users")
 public class User {
 
+    @Id
     private UUID id;
+
+    @Column(nullable = false, unique = true)
     private String login;
+
     private String email;
+
+    @Column(name = "birth_date")
     private LocalDate birthDate;
+
+    @Enumerated(EnumType.STRING)
     private Role role;
-    private List<Fish> fish = new ArrayList<>();
 
     public User() {
     }
@@ -26,14 +41,6 @@ public class User {
         this.email = email;
         this.birthDate = birthDate;
         this.role = role;
-    }
-
-    /**
-     * Copy constructor, used by the repository so that callers never share stored instances.
-     */
-    public User(User other) {
-        this(other.id, other.login, other.email, other.birthDate, other.role);
-        this.fish = new ArrayList<>(other.fish);
     }
 
     public UUID getId() { return id; }
@@ -50,9 +57,6 @@ public class User {
 
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
-
-    public List<Fish> getFish() { return fish; }
-    public void setFish(List<Fish> fish) { this.fish = fish; }
 
     @Override
     public boolean equals(Object o) {

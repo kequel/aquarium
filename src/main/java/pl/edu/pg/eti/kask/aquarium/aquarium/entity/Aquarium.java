@@ -1,20 +1,33 @@
 package pl.edu.pg.eti.kask.aquarium.aquarium.entity;
 
-import pl.edu.pg.eti.kask.aquarium.fish.entity.Fish;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Aquarium (category). The relation to fish is unidirectional and owned by {@code Fish},
+ * so the aquarium does not keep a list of its fish.
+ */
+@Entity
+@Table(name = "aquariums")
 public class Aquarium {
 
+    @Id
     private UUID id;
+
+    @Column(nullable = false)
     private String name;
+
+    @Column(name = "volume_liters")
     private Integer volumeLiters;
+
     private Double temperature;
+
     private boolean freshwater;
-    private List<Fish> fish = new ArrayList<>();
 
     public Aquarium() {
     }
@@ -42,9 +55,6 @@ public class Aquarium {
     public boolean isFreshwater() { return freshwater; }
     public void setFreshwater(boolean freshwater) { this.freshwater = freshwater; }
 
-    public List<Fish> getFish() { return fish; }
-    public void setFish(List<Fish> fish) { this.fish = fish; }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -58,6 +68,6 @@ public class Aquarium {
     @Override
     public String toString() {
         return "Aquarium{id=" + id + ", name='" + name + "', volumeLiters=" + volumeLiters
-                + ", temperature=" + temperature + ", freshwater=" + freshwater + ", fish=" + fish.size() + "}";
+                + ", temperature=" + temperature + ", freshwater=" + freshwater + "}";
     }
 }

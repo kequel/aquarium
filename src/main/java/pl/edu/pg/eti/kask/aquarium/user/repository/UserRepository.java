@@ -1,40 +1,53 @@
 package pl.edu.pg.eti.kask.aquarium.user.repository;
 
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import pl.edu.pg.eti.kask.aquarium.user.entity.User;
+import pl.edu.pg.eti.kask.aquarium.repository.Repository;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * In-memory user storage. Shared by all requests, so it is thread safe
- * and always hands out copies of stored objects.
+ * JPA based user repository. Request scoped, like the container managed EntityManager it uses.
  */
-public class UserRepository {
+@RequestScoped
+public class UserRepository implements Repository<User, UUID> {
 
-    private final Map<UUID, User> users = new ConcurrentHashMap<>();
+    @PersistenceContext
+    private EntityManager em;
 
-    public List<User> findAll() {
-        return users.values().stream()
-                .sorted(Comparator.comparing(User::getLogin))
-                .map(User::new)
-                .toList();
-    }
-
+    @Override
     public Optional<User> find(UUID id) {
-        return Optional.ofNullable(users.get(id)).map(User::new);
+        return Optional.ofNullable(em.find(User.class, id));
     }
 
-    public void create(User user) {
-        if (users.putIfAbsent(user.getId(), new User(user)) != null) {
-            throw new IllegalArgumentException("User with id " + user.getId() + " already exists");
-        }
+    @Override
+    public List<User> findAll() {
+        return em.createQuery("select u from User u order by u.login", User.class).getResultList();
     }
 
-    public boolean exists(UUID id) {
-        return users.containsKey(id);
+    public Optional<User> findByLogin(String login) {
+        return em.createQuery("select u from User u where u.login = :login", User.class)
+                .setParameter("login", login)
+                .getResultStream()
+                .findFirst();
+    }
+
+    @Override
+    public void create(User entity) {
+        em.persist(entity);
+    }
+
+    @Override
+    public void update(User entity) {
+        em.merge(entity);
+    }
+
+    @Override
+    public void delete(User entity) {
+        em.remove(em.contains(entity) ? entity : em.merge(entity));
     }
 }
