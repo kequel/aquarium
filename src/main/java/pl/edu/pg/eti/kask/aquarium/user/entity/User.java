@@ -28,6 +28,14 @@ public class User {
         this.role = role;
     }
 
+    /**
+     * Copy constructor, used by the repository so that callers never share stored instances.
+     */
+    public User(User other) {
+        this(other.id, other.login, other.email, other.birthDate, other.role);
+        this.fish = new ArrayList<>(other.fish);
+    }
+
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
@@ -59,6 +67,6 @@ public class User {
     @Override
     public String toString() {
         return "User{id=" + id + ", login='" + login + "', email='" + email + "', birthDate=" + birthDate
-                + ", role=" + role + ", fish=" + fish.size() + "}";
+                + ", role=" + role + "}";
     }
 }

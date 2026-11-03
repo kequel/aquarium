@@ -1,0 +1,66 @@
+@baseUrl = http://localhost:8080/lab1/api
+@userId = 81e1c2a9-7f57-439b-b53d-6db88b071e4e
+@unknownId = 00000000-0000-0000-0000-000000000000
+
+### Lista użytkowników -> 200, application/json
+GET {{baseUrl}}/users
+
+### Pojedynczy użytkownik -> 200, application/json
+GET {{baseUrl}}/users/{{userId}}
+
+### Nieistniejący użytkownik -> 404
+GET {{baseUrl}}/users/{{unknownId}}
+
+### Avatar przed wgraniem -> 404
+GET {{baseUrl}}/users/{{userId}}/avatar
+
+### Nadpisanie nieistniejącego avatara -> 404
+PUT {{baseUrl}}/users/{{userId}}/avatar
+Content-Type: image/png
+
+< ./avatars/avatar1.png
+
+### Wgranie avatara -> 201, nagłówek Location
+POST {{baseUrl}}/users/{{userId}}/avatar
+Content-Type: image/png
+
+< ./avatars/avatar1.png
+
+### Ponowne wgranie, gdy avatar już istnieje -> 409
+POST {{baseUrl}}/users/{{userId}}/avatar
+Content-Type: image/png
+
+< ./avatars/avatar1.png
+
+### Pobranie avatara -> 200, image/png (niebieski)
+GET {{baseUrl}}/users/{{userId}}/avatar
+
+### Nadpisanie avatara -> 204
+PUT {{baseUrl}}/users/{{userId}}/avatar
+Content-Type: image/png
+
+< ./avatars/avatar2.png
+
+### Pobranie nadpisanego avatara -> 200, image/png (czerwony)
+GET {{baseUrl}}/users/{{userId}}/avatar
+
+### Zły typ treści -> 415
+POST {{baseUrl}}/users/{{userId}}/avatar
+Content-Type: text/plain
+
+to nie jest obrazek
+
+### Avatar nieistniejącego użytkownika -> 404
+POST {{baseUrl}}/users/{{unknownId}}/avatar
+Content-Type: image/png
+
+< ./avatars/avatar1.png
+
+### Usunięcie avatara -> 204
+DELETE {{baseUrl}}/users/{{userId}}/avatar
+
+### Ponowne usunięcie -> 404
+DELETE {{baseUrl}}/users/{{userId}}/avatar
+
+### Niedozwolona metoda na kolekcji -> 405
+DELETE {{baseUrl}}/users
