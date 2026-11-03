@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:8080/lab2/api
+@baseUrl = http://localhost:8080/lab3/api
 @userId = 81e1c2a9-7f57-439b-b53d-6db88b071e4e
 @unknownId = 00000000-0000-0000-0000-000000000000
 

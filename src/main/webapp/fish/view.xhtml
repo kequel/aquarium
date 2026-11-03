@@ -1,0 +1,51 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/WEB-INF/template/main.xhtml">
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewParam name="id" value="#{fishView.id}"/>
+            <f:viewAction action="#{fishView.init}"/>
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">#{fishView.fish.species}</ui:define>
+
+    <ui:define name="content">
+        <article>
+            <h1>#{fishView.fish.species}</h1>
+
+            <dl class="details">
+                <dt>Gatunek</dt>
+                <dd>#{fishView.fish.species}</dd>
+                <dt>Długość</dt>
+                <dd>#{fishView.fish.lengthCm} cm</dd>
+                <dt>Data zakupu</dt>
+                <dd>
+                    <h:outputText value="#{fishView.fish.purchaseDate}">
+                        <f:convertDateTime type="localDateTime" pattern="dd.MM.yyyy, HH:mm"/>
+                    </h:outputText>
+                </dd>
+                <dt>Liczba sztuk</dt>
+                <dd>#{fishView.fish.quantity}</dd>
+                <dt>Temperament</dt>
+                <dd>#{fishView.fish.temperament}</dd>
+                <dt>Akwarium</dt>
+                <dd>
+                    <h:link outcome="/aquarium/view" value="#{fishView.fish.aquarium.name}">
+                        <f:param name="id" value="#{fishView.fish.aquarium.id}"/>
+                    </h:link>
+                </dd>
+            </dl>
+
+            <p>
+                <h:link outcome="/fish/edit" value="Edytuj" styleClass="button">
+                    <f:param name="id" value="#{fishView.fish.id}"/>
+                </h:link>
+            </p>
+        </article>
+    </ui:define>
+
+</ui:composition>

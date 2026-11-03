@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import pl.edu.pg.eti.kask.aquarium.aquarium.entity.Aquarium;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
@@ -20,7 +21,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "fish")
-public class Fish {
+public class Fish implements Serializable {
 
     @Id
     private UUID id;

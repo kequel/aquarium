@@ -26,4 +26,40 @@
         <password>sa</password>
     </data-source>
 
+    <!-- Comments in .xhtml files are notes for developers, do not send them to the browser. -->
+    <context-param>
+        <param-name>jakarta.faces.FACELETS_SKIP_COMMENTS</param-name>
+        <param-value>true</param-value>
+    </context-param>
+
+    <!--
+        Do not let browsers cache CSS and images for a week (Mojarra's default),
+        so changes in style.css are visible after a restart.
+    -->
+    <context-param>
+        <param-name>com.sun.faces.defaultResourceMaxAge</param-name>
+        <param-value>0</param-value>
+    </context-param>
+
+    <!-- Jakarta Faces: every *.xhtml page is processed by the Faces servlet. -->
+    <servlet>
+        <servlet-name>Faces Servlet</servlet-name>
+        <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Faces Servlet</servlet-name>
+        <url-pattern>*.xhtml</url-pattern>
+    </servlet-mapping>
+
+    <!-- Keep the session id in a cookie only, so it is not appended to links as ;jsessionid=... -->
+    <session-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+
+    <!-- Home page: the list of aquariums. -->
+    <welcome-file-list>
+        <welcome-file>aquarium/list.xhtml</welcome-file>
+    </welcome-file-list>
+
 </web-app>

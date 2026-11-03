@@ -1,0 +1,52 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:pt="jakarta.faces.passthrough"
+                template="/WEB-INF/template/main.xhtml">
+
+    <ui:define name="title">Nowe akwarium</ui:define>
+
+    <ui:define name="content">
+        <section>
+            <h1>Nowe akwarium</h1>
+
+            <h:form styleClass="form">
+                <div class="field">
+                    <h:outputLabel for="name" value="Nazwa"/>
+                    <h:inputText id="name" value="#{aquariumCreate.aquarium.name}" required="true"
+                                 requiredMessage="Podaj nazwę."/>
+                </div>
+
+                <div class="field">
+                    <h:outputLabel for="volumeLiters" value="Pojemność [l]"/>
+                    <h:inputText id="volumeLiters" value="#{aquariumCreate.aquarium.volumeLiters}" required="true"
+                                 pt:type="number" pt:min="1" pt:step="1"
+                                 requiredMessage="Podaj pojemność."
+                                 converterMessage="Pojemność musi być liczbą całkowitą."
+                                 validatorMessage="Pojemność musi wynosić co najmniej 1 l.">
+                        <f:validateLongRange minimum="1"/>
+                    </h:inputText>
+                </div>
+
+                <div class="field">
+                    <h:outputLabel for="temperature" value="Temperatura wody [°C]"/>
+                    <h:inputText id="temperature" value="#{aquariumCreate.aquarium.temperature}" required="true"
+                                 pt:type="number" pt:step="0.1"
+                                 requiredMessage="Podaj temperaturę."
+                                 converterMessage="Temperatura musi być liczbą."/>
+                </div>
+
+                <div class="field">
+                    <label class="checkbox">
+                        <h:selectBooleanCheckbox value="#{aquariumCreate.aquarium.freshwater}"/>
+                        Woda słodka
+                    </label>
+                </div>
+
+                <h:commandButton value="Zapisz" action="#{aquariumCreate.save}" styleClass="button"/>
+            </h:form>
+        </section>
+    </ui:define>
+
+</ui:composition>

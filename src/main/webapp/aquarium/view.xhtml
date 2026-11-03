@@ -1,0 +1,75 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/WEB-INF/template/main.xhtml">
+
+    <ui:define name="metadata">
+        <f:metadata>
+            <f:viewParam name="id" value="#{aquariumView.id}"/>
+            <f:viewAction action="#{aquariumView.init}"/>
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="title">#{aquariumView.aquarium.name}</ui:define>
+
+    <ui:define name="content">
+        <article>
+            <h1>#{aquariumView.aquarium.name}</h1>
+
+            <dl class="details">
+                <dt>Pojemność</dt>
+                <dd>#{aquariumView.aquarium.volumeLiters} l</dd>
+                <dt>Temperatura wody</dt>
+                <dd>#{aquariumView.aquarium.temperature} °C</dd>
+                <dt>Woda</dt>
+                <dd>#{aquariumView.aquarium.freshwater ? 'słodka' : 'słona'}</dd>
+            </dl>
+
+            <section>
+                <h2>Ryby</h2>
+
+                <p>
+                    <h:link outcome="/fish/create" value="Dodaj rybę" styleClass="button">
+                        <f:param name="aquarium" value="#{aquariumView.id}"/>
+                    </h:link>
+                </p>
+
+                <h:form rendered="#{not empty aquariumView.fish}">
+                    <h:dataTable value="#{aquariumView.fish}" var="fish" styleClass="table">
+                        <h:column>
+                            <f:facet name="header">Gatunek</f:facet>
+                            <h:link outcome="/fish/view" value="#{fish.species}">
+                                <f:param name="id" value="#{fish.id}"/>
+                            </h:link>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">Liczba sztuk</f:facet>
+                            #{fish.quantity}
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">Temperament</f:facet>
+                            #{fish.temperament}
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">Akcje</f:facet>
+                            <div class="actions">
+                                <h:link outcome="/fish/edit" value="Edytuj" styleClass="button">
+                                    <f:param name="id" value="#{fish.id}"/>
+                                </h:link>
+                                <h:commandButton value="Usuń" action="#{aquariumView.deleteFish(fish)}"
+                                                 styleClass="button button-danger"
+                                                 onclick="return confirm('Usunąć tę rybę?')"/>
+                            </div>
+                        </h:column>
+                    </h:dataTable>
+                </h:form>
+
+                <ui:fragment rendered="#{empty aquariumView.fish}">
+                    <p>W tym akwarium nie ma jeszcze ryb.</p>
+                </ui:fragment>
+            </section>
+        </article>
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,52 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/WEB-INF/template/main.xhtml">
+
+    <ui:define name="title">Akwaria</ui:define>
+
+    <ui:define name="content">
+        <section>
+            <h1>Akwaria</h1>
+
+            <p>
+                <h:link outcome="/aquarium/create" value="Dodaj akwarium" styleClass="button"/>
+            </p>
+
+            <h:form rendered="#{not empty aquariumList.aquariums}">
+                <h:dataTable value="#{aquariumList.aquariums}" var="aquarium" styleClass="table">
+                    <h:column>
+                        <f:facet name="header">Nazwa</f:facet>
+                        <h:link outcome="/aquarium/view" value="#{aquarium.name}">
+                            <f:param name="id" value="#{aquarium.id}"/>
+                        </h:link>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Pojemność</f:facet>
+                        #{aquarium.volumeLiters} l
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Temperatura</f:facet>
+                        #{aquarium.temperature} °C
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Woda</f:facet>
+                        #{aquarium.freshwater ? 'słodka' : 'słona'}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Akcje</f:facet>
+                        <h:commandButton value="Usuń" action="#{aquariumList.delete(aquarium)}"
+                                         styleClass="button button-danger"
+                                         onclick="return confirm('Usunąć akwarium razem ze wszystkimi rybami?')"/>
+                    </h:column>
+                </h:dataTable>
+            </h:form>
+
+            <ui:fragment rendered="#{empty aquariumList.aquariums}">
+                <p>Brak akwariów.</p>
+            </ui:fragment>
+        </section>
+    </ui:define>
+
+</ui:composition>

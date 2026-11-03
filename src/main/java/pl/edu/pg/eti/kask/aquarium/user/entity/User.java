@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
@@ -16,7 +17,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements Serializable {
 
     @Id
     private UUID id;

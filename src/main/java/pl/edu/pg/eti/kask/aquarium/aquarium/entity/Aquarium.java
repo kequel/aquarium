@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -14,7 +15,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "aquariums")
-public class Aquarium {
+public class Aquarium implements Serializable {
 
     @Id
     private UUID id;

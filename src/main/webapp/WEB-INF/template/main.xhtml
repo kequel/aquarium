@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--
+    Base template used by every view. Views fill in:
+    metadata (view parameters), title (browser tab and heading) and content (page body).
+-->
+<html lang="pl"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets">
+
+<ui:insert name="metadata"/>
+
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="Aplikacja do zarządzania akwariami i mieszkającymi w nich rybami."/>
+    <title><ui:insert name="title"/> | Akwarium</title>
+    <h:outputStylesheet library="css" name="style.css"/>
+</h:head>
+
+<h:body>
+    <header class="page-header">
+        <h:graphicImage library="img" name="fish.png" alt="Logo: złota rybka" width="64" height="64"/>
+        <p class="site-name">Akwarium</p>
+    </header>
+
+    <nav class="page-nav" aria-label="Nawigacja główna">
+        <ul>
+            <li><h:link outcome="/aquarium/list" value="Akwaria"/></li>
+        </ul>
+    </nav>
+
+    <main class="page-main">
+        <h:messages styleClass="messages"/>
+        <ui:insert name="content"/>
+    </main>
+
+    <footer class="page-footer">
+        <p>Akwarium · Laboratorium Jakarta EE</p>
+    </footer>
+</h:body>
+</html>

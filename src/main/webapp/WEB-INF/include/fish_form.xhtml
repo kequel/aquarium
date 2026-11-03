@@ -1,0 +1,73 @@
+<!--
+    Form shared by the "new fish" and "edit fish" views.
+    The backing bean (FishCreate or FishEdit) is passed in the "bean" parameter.
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:pt="jakarta.faces.passthrough">
+
+    <h:form styleClass="form">
+        <div class="field">
+            <h:outputLabel for="species" value="Gatunek"/>
+            <h:inputText id="species" value="#{bean.fish.species}" required="true"
+                         requiredMessage="Podaj gatunek."/>
+        </div>
+
+        <div class="field">
+            <h:outputLabel for="lengthCm" value="Długość [cm]"/>
+            <h:inputText id="lengthCm" value="#{bean.fish.lengthCm}" required="true"
+                         pt:type="number" pt:min="0.1" pt:step="0.1"
+                         requiredMessage="Podaj długość."
+                         converterMessage="Długość musi być liczbą."
+                         validatorMessage="Długość musi być większa od zera.">
+                <f:validateDoubleRange minimum="0.1"/>
+            </h:inputText>
+        </div>
+
+        <div class="field">
+            <h:outputLabel for="purchaseDate" value="Data i godzina zakupu"/>
+            <h:inputText id="purchaseDate" value="#{bean.fish.purchaseDate}" required="true"
+                         pt:type="datetime-local"
+                         requiredMessage="Podaj datę zakupu."
+                         converterMessage="Niepoprawna data zakupu.">
+                <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd'T'HH:mm"/>
+            </h:inputText>
+        </div>
+
+        <div class="field">
+            <h:outputLabel for="quantity" value="Liczba sztuk"/>
+            <h:inputText id="quantity" value="#{bean.fish.quantity}" required="true"
+                         pt:type="number" pt:min="1" pt:step="1"
+                         requiredMessage="Podaj liczbę sztuk."
+                         converterMessage="Liczba sztuk musi być liczbą całkowitą."
+                         validatorMessage="Liczba sztuk musi wynosić co najmniej 1.">
+                <f:validateLongRange minimum="1"/>
+            </h:inputText>
+        </div>
+
+        <div class="field">
+            <h:outputLabel for="temperament" value="Temperament"/>
+            <h:selectOneMenu id="temperament" value="#{bean.fish.temperament}" required="true"
+                             requiredMessage="Wybierz temperament.">
+                <f:selectItem itemLabel="— wybierz —" noSelectionOption="true"/>
+                <f:selectItems value="#{bean.temperaments}"/>
+            </h:selectOneMenu>
+        </div>
+
+        <div class="field">
+            <h:outputLabel for="aquarium" value="Akwarium"/>
+            <!-- Aquarium objects are turned into ids and back by AquariumConverter. -->
+            <h:selectOneMenu id="aquarium" value="#{bean.fish.aquarium}" required="true"
+                             requiredMessage="Wybierz akwarium.">
+                <f:selectItem itemLabel="— wybierz —" noSelectionOption="true"/>
+                <f:selectItems value="#{bean.aquariums}" var="aquarium"
+                               itemLabel="#{aquarium.name}" itemValue="#{aquarium}"/>
+            </h:selectOneMenu>
+        </div>
+
+        <h:commandButton value="Zapisz" action="#{bean.save}" styleClass="button"/>
+    </h:form>
+
+</ui:composition>
