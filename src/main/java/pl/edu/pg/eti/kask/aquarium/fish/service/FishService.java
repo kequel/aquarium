@@ -40,6 +40,13 @@ public class FishService {
     }
 
     /**
+     * @return the fish, empty if it does not exist or lives in another aquarium
+     */
+    public Optional<Fish> find(UUID aquariumId, UUID id) {
+        return fishRepository.find(id).filter(fish -> fish.getAquarium().getId().equals(aquariumId));
+    }
+
+    /**
      * @return fish living in the given aquarium, empty if the aquarium does not exist
      */
     public Optional<List<Fish>> findAllByAquarium(UUID aquariumId) {

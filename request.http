@@ -1,6 +1,9 @@
-@baseUrl = http://localhost:8080/lab3/api
+@baseUrl = http://localhost:8080/lab4/api
 @userId = 81e1c2a9-7f57-439b-b53d-6db88b071e4e
 @unknownId = 00000000-0000-0000-0000-000000000000
+@aquariumId = 5d1f2b8a-3c47-4e0d-9a61-7b2e8f4c1a01
+@fishId = a1b2c3d4-0001-4000-8000-000000000001
+@otherAquariumFishId = a1b2c3d4-0003-4000-8000-000000000003
 
 ### Lista użytkowników -> 200, application/json
 GET {{baseUrl}}/users
@@ -113,3 +116,150 @@ GET {{baseUrl}}/users/{{newUserId}}
 DELETE {{baseUrl}}/users/{{newUserId}}
 
 
+
+### ================= Akwaria (kategorie) =================
+
+### Lista akwariów (bez ryb) -> 200
+GET {{baseUrl}}/aquariums
+
+### Jedno akwarium -> 200
+GET {{baseUrl}}/aquariums/{{aquariumId}}
+
+### Nieistniejące akwarium -> 404
+GET {{baseUrl}}/aquariums/{{unknownId}}
+
+### Dodanie akwarium -> 201, nagłówek Location
+POST {{baseUrl}}/aquariums
+Content-Type: application/json
+
+{
+  "name": "Krewetkarium",
+  "volumeLiters": 60,
+  "temperature": 23.5,
+  "freshwater": true
+}
+
+> {% client.global.set("newAquariumId", response.body.id); %}
+
+### Dodanie akwarium bez nazwy -> 400
+POST {{baseUrl}}/aquariums
+Content-Type: application/json
+
+{
+  "volumeLiters": 60
+}
+
+### Treść, która nie jest poprawnym JSON-em -> 400
+POST {{baseUrl}}/aquariums
+Content-Type: application/json
+
+{ to nie jest json
+
+### Modyfikacja akwarium -> 204
+PUT {{baseUrl}}/aquariums/{{newAquariumId}}
+Content-Type: application/json
+
+{
+  "name": "Krewetkarium duże",
+  "volumeLiters": 112,
+  "temperature": 24.0,
+  "freshwater": true
+}
+
+### Akwarium po modyfikacji -> 200
+GET {{baseUrl}}/aquariums/{{newAquariumId}}
+
+### Modyfikacja nieistniejącego akwarium -> 404
+PUT {{baseUrl}}/aquariums/{{unknownId}}
+Content-Type: application/json
+
+{
+  "name": "Duch",
+  "volumeLiters": 10,
+  "temperature": 20.0,
+  "freshwater": true
+}
+
+### ================= Ryby (elementy) =================
+
+### Ryby w akwarium -> 200
+GET {{baseUrl}}/aquariums/{{aquariumId}}/fish
+
+### Ryby w nieistniejącym akwarium -> 404
+GET {{baseUrl}}/aquariums/{{unknownId}}/fish
+
+### Jedna ryba -> 200
+GET {{baseUrl}}/aquariums/{{aquariumId}}/fish/{{fishId}}
+
+### Ryba z innego akwarium pod tym adresem -> 404
+GET {{baseUrl}}/aquariums/{{aquariumId}}/fish/{{otherAquariumFishId}}
+
+### Dodanie ryby do nowego akwarium -> 201, nagłówek Location (akwarium wynika z adresu)
+POST {{baseUrl}}/aquariums/{{newAquariumId}}/fish
+Content-Type: application/json
+
+{
+  "species": "Krewetka red cherry",
+  "lengthCm": 2.5,
+  "purchaseDate": "2026-11-03T12:00:00",
+  "quantity": 10,
+  "temperament": "PEACEFUL"
+}
+
+> {% client.global.set("newFishId", response.body.id); %}
+
+### Dodanie ryby bez gatunku -> 400
+POST {{baseUrl}}/aquariums/{{newAquariumId}}/fish
+Content-Type: application/json
+
+{
+  "quantity": 3
+}
+
+### Dodanie ryby do nieistniejącego akwarium -> 404
+POST {{baseUrl}}/aquariums/{{unknownId}}/fish
+Content-Type: application/json
+
+{
+  "species": "Zagubiona",
+  "quantity": 1
+}
+
+### Modyfikacja ryby -> 204 (pole "aquarium" jest ignorowane, ryba zostaje w swoim akwarium)
+PUT {{baseUrl}}/aquariums/{{newAquariumId}}/fish/{{newFishId}}
+Content-Type: application/json
+
+{
+  "species": "Krewetka blue dream",
+  "lengthCm": 3.0,
+  "purchaseDate": "2026-11-03T12:00:00",
+  "quantity": 20,
+  "temperament": "PEACEFUL",
+  "aquarium": "{{aquariumId}}"
+}
+
+### Ryba po modyfikacji -> 200
+GET {{baseUrl}}/aquariums/{{newAquariumId}}/fish/{{newFishId}}
+
+### Usunięcie ryby -> 204
+DELETE {{baseUrl}}/aquariums/{{newAquariumId}}/fish/{{newFishId}}
+
+### Ponowne usunięcie ryby -> 404
+DELETE {{baseUrl}}/aquariums/{{newAquariumId}}/fish/{{newFishId}}
+
+### ================= Usunięcie akwarium razem z rybami =================
+
+### Ryby w akwarium "Amazonka" przed usunięciem -> 200 (2 ryby)
+GET {{baseUrl}}/aquariums/{{aquariumId}}/fish
+
+### Usunięcie akwarium -> 204
+DELETE {{baseUrl}}/aquariums/{{aquariumId}}
+
+### Usunięte akwarium -> 404
+GET {{baseUrl}}/aquariums/{{aquariumId}}
+
+### Ryba z usuniętego akwarium też zniknęła -> 404
+GET {{baseUrl}}/aquariums/{{aquariumId}}/fish/{{fishId}}
+
+### Ponowne usunięcie akwarium -> 404
+DELETE {{baseUrl}}/aquariums/{{aquariumId}}

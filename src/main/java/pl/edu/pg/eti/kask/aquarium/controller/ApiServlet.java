@@ -23,9 +23,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * REST-like controller for users and avatars.
+ * REST-like controller for users and avatars. Mapped only to /api/users, the rest of /api is handled by JAX-RS.
  */
-@WebServlet(urlPatterns = "/api/*")
+@WebServlet(urlPatterns = {"/api/users", "/api/users/*"})
 public class ApiServlet extends HttpServlet {
 
     private static final String UUID_REGEX = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
@@ -175,9 +175,10 @@ public class ApiServlet extends HttpServlet {
         writeJson(response, GetUserResponse.from(user));
     }
 
+    /** Path after /api, e.g. /users/{id}/avatar. */
     private static String path(HttpServletRequest request) {
-        String path = request.getPathInfo();
-        return path != null ? path : "";
+        String path = request.getServletPath().substring("/api".length());
+        return request.getPathInfo() != null ? path + request.getPathInfo() : path;
     }
 
     /** Whether the path names an existing resource type (so a wrong method gives 405, not 404). */
