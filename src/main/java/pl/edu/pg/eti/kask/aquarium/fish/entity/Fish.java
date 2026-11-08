@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import pl.edu.pg.eti.kask.aquarium.aquarium.entity.Aquarium;
+import pl.edu.pg.eti.kask.aquarium.user.entity.User;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -16,8 +17,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Fish (element) living in an aquarium. Owner of the unidirectional fish -> aquarium relation.
- * The relation to the user is intentionally omitted for now (lab 2).
+ * Fish (element) living in an aquarium and owned by a user. Owning side of both relations
+ * (the foreign keys aquarium_id and user_id are in the fish table).
  */
 @Entity
 @Table(name = "fish")
@@ -44,11 +45,16 @@ public class Fish implements Serializable {
     @JoinColumn(name = "aquarium_id", nullable = false)
     private Aquarium aquarium;
 
+    /** Owner of the fish. Optional: fish added in the application do not have an owner yet. */
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     public Fish() {
     }
 
     public Fish(UUID id, String species, Double lengthCm, LocalDateTime purchaseDate, Integer quantity,
-                Temperament temperament, Aquarium aquarium) {
+                Temperament temperament, Aquarium aquarium, User user) {
         this.id = id;
         this.species = species;
         this.lengthCm = lengthCm;
@@ -56,6 +62,7 @@ public class Fish implements Serializable {
         this.quantity = quantity;
         this.temperament = temperament;
         this.aquarium = aquarium;
+        this.user = user;
     }
 
     public UUID getId() { return id; }
@@ -79,6 +86,9 @@ public class Fish implements Serializable {
     public Aquarium getAquarium() { return aquarium; }
     public void setAquarium(Aquarium aquarium) { this.aquarium = aquarium; }
 
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -93,6 +103,7 @@ public class Fish implements Serializable {
     public String toString() {
         return "Fish{id=" + id + ", species='" + species + "', lengthCm=" + lengthCm
                 + ", purchaseDate=" + purchaseDate + ", quantity=" + quantity + ", temperament=" + temperament
-                + ", aquarium=" + (aquarium != null ? aquarium.getName() : null) + "}";
+                + ", aquarium=" + (aquarium != null ? aquarium.getName() : null)
+                + ", user=" + (user != null ? user.getLogin() : null) + "}";
     }
 }

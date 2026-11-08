@@ -43,7 +43,8 @@ public class AquariumView implements Serializable {
     }
 
     /**
-     * Loads the aquarium and, with a separate query, its fish. Called once, when the page is opened.
+     * Loads the aquarium. Its fish come with it (EAGER relation), no separate query is needed.
+     * Called once, when the page is opened.
      */
     public void init() {
         aquarium = id == null ? null : aquariumService.find(id).orElse(null);
@@ -51,7 +52,7 @@ public class AquariumView implements Serializable {
             HttpErrors.notFound();
             return;
         }
-        fish = fishService.findAllByAquarium(id).orElseThrow();
+        fish = aquarium.getFish();
     }
 
     /**

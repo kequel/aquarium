@@ -58,17 +58,23 @@ public class InitializedData {
         }
     }
 
+    private final User admin = new User(UUID.fromString("c4804e0f-769e-4ab9-9ebe-0578fb4f00a6"),
+            "admin", "admin@example.com", LocalDate.of(1990, 10, 21), Role.ADMIN);
+    private final User kevin = new User(UUID.fromString("81e1c2a9-7f57-439b-b53d-6db88b071e4e"),
+            "kevin", "kevin@example.com", LocalDate.of(2001, 1, 16), Role.USER);
+    private final User alice = new User(UUID.fromString("ed6cfb2a-cad7-47dd-9b56-9d1e3c7a4197"),
+            "alice", "alice@example.com", LocalDate.of(2002, 3, 19), Role.USER);
+    private final User bob = new User(UUID.fromString("f08ef7e3-7f2a-4378-b1fb-2922d730c70d"),
+            "bob", "bob@example.com", LocalDate.of(1999, 7, 4), Role.USER);
+
     private void loadUsers() {
-        userService.create(new User(UUID.fromString("c4804e0f-769e-4ab9-9ebe-0578fb4f00a6"),
-                "admin", "admin@example.com", LocalDate.of(1990, 10, 21), Role.ADMIN));
-        userService.create(new User(UUID.fromString("81e1c2a9-7f57-439b-b53d-6db88b071e4e"),
-                "kevin", "kevin@example.com", LocalDate.of(2001, 1, 16), Role.USER));
-        userService.create(new User(UUID.fromString("ed6cfb2a-cad7-47dd-9b56-9d1e3c7a4197"),
-                "alice", "alice@example.com", LocalDate.of(2002, 3, 19), Role.USER));
-        userService.create(new User(UUID.fromString("f08ef7e3-7f2a-4378-b1fb-2922d730c70d"),
-                "bob", "bob@example.com", LocalDate.of(1999, 7, 4), Role.USER));
+        userService.create(admin);
+        userService.create(kevin);
+        userService.create(alice);
+        userService.create(bob);
     }
 
+    /** Every fish has an owner: kevin has 2 fish, alice 2, bob 1, admin none. */
     private void loadAquariumsAndFish() {
         Aquarium amazon = new Aquarium(UUID.fromString("5d1f2b8a-3c47-4e0d-9a61-7b2e8f4c1a01"),
                 "Amazonka", 240, 26.5, true);
@@ -81,14 +87,14 @@ public class InitializedData {
         aquariumService.create(pond);
 
         fishService.create(new Fish(UUID.fromString("a1b2c3d4-0001-4000-8000-000000000001"),
-                "Neon Innesa", 3.5, LocalDateTime.of(2024, 5, 12, 14, 30), 15, Temperament.PEACEFUL, amazon));
+                "Neon Innesa", 3.5, LocalDateTime.of(2024, 5, 12, 14, 30), 15, Temperament.PEACEFUL, amazon, kevin));
         fishService.create(new Fish(UUID.fromString("a1b2c3d4-0002-4000-8000-000000000002"),
-                "Skalar", 12.0, LocalDateTime.of(2024, 6, 3, 10, 0), 4, Temperament.SEMI_AGGRESSIVE, amazon));
+                "Skalar", 12.0, LocalDateTime.of(2024, 6, 3, 10, 0), 4, Temperament.SEMI_AGGRESSIVE, amazon, kevin));
         fishService.create(new Fish(UUID.fromString("a1b2c3d4-0003-4000-8000-000000000003"),
-                "Błazenek", 8.0, LocalDateTime.of(2025, 2, 20, 16, 45), 2, Temperament.SEMI_AGGRESSIVE, reef));
+                "Błazenek", 8.0, LocalDateTime.of(2025, 2, 20, 16, 45), 2, Temperament.SEMI_AGGRESSIVE, reef, alice));
         fishService.create(new Fish(UUID.fromString("a1b2c3d4-0004-4000-8000-000000000004"),
-                "Pokolec królewski", 15.0, LocalDateTime.of(2025, 3, 8, 11, 15), 1, Temperament.PEACEFUL, reef));
+                "Pokolec królewski", 15.0, LocalDateTime.of(2025, 3, 8, 11, 15), 1, Temperament.PEACEFUL, reef, alice));
         fishService.create(new Fish(UUID.fromString("a1b2c3d4-0005-4000-8000-000000000005"),
-                "Karp koi", 45.0, LocalDateTime.of(2023, 8, 1, 9, 0), 6, Temperament.PEACEFUL, pond));
+                "Karp koi", 45.0, LocalDateTime.of(2023, 8, 1, 9, 0), 6, Temperament.PEACEFUL, pond, bob));
     }
 }

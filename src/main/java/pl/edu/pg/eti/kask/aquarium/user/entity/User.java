@@ -5,15 +5,19 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import pl.edu.pg.eti.kask.aquarium.fish.entity.Fish;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Application user. The relation to fish is intentionally omitted for now (lab 2).
+ * Application user. The relation to fish is bidirectional, the owning side is {@code Fish.user}.
  */
 @Entity
 @Table(name = "users")
@@ -32,6 +36,10 @@ public class User implements Serializable {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    /** Fish owned by the user, loaded only when needed (LAZY, the default for collections). */
+    @OneToMany(mappedBy = "user")
+    private List<Fish> fish = new ArrayList<>();
 
     public User() {
     }
@@ -58,6 +66,8 @@ public class User implements Serializable {
 
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+
+    public List<Fish> getFish() { return fish; }
 
     @Override
     public boolean equals(Object o) {

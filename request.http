@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:8080/lab4/api
+@baseUrl = http://localhost:8080/lab5/api
 @userId = 81e1c2a9-7f57-439b-b53d-6db88b071e4e
 @unknownId = 00000000-0000-0000-0000-000000000000
 @aquariumId = 5d1f2b8a-3c47-4e0d-9a61-7b2e8f4c1a01
@@ -263,3 +263,14 @@ GET {{baseUrl}}/aquariums/{{aquariumId}}/fish/{{fishId}}
 
 ### Ponowne usunięcie akwarium -> 404
 DELETE {{baseUrl}}/aquariums/{{aquariumId}}
+
+### ================= Związek użytkownik – ryba =================
+
+### Ryby w "Rafie koralowej" (właścicielka: alice) -> 200, 2 ryby
+GET {{baseUrl}}/aquariums/9a7e4c12-6b3d-4f85-8e2a-1c9d5b7f3a02/fish
+
+### Usunięcie użytkownika alice, który ma ryby -> 204
+DELETE {{baseUrl}}/users/ed6cfb2a-cad7-47dd-9b56-9d1e3c7a4197
+
+### Ryby alice zostają w akwarium, tylko bez właściciela -> 200, nadal 2 ryby
+GET {{baseUrl}}/aquariums/9a7e4c12-6b3d-4f85-8e2a-1c9d5b7f3a02/fish

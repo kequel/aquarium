@@ -11,6 +11,7 @@ import pl.edu.pg.eti.kask.aquarium.aquarium.service.AquariumService;
 import pl.edu.pg.eti.kask.aquarium.fish.entity.Fish;
 import pl.edu.pg.eti.kask.aquarium.fish.entity.Temperament;
 import pl.edu.pg.eti.kask.aquarium.fish.service.FishService;
+import pl.edu.pg.eti.kask.aquarium.user.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -27,19 +28,21 @@ public class ServicesDemo {
 
     private final AquariumService aquariumService;
     private final FishService fishService;
+    private final UserService userService;
     private final RequestContextController requestContextController;
 
     @Inject
-    public ServicesDemo(AquariumService aquariumService, FishService fishService,
+    public ServicesDemo(AquariumService aquariumService, FishService fishService, UserService userService,
                         RequestContextController requestContextController) {
         this.aquariumService = aquariumService;
         this.fishService = fishService;
+        this.userService = userService;
         this.requestContextController = requestContextController;
     }
 
     /** Required by CDI to create a proxy of a normal scoped bean. */
     protected ServicesDemo() {
-        this(null, null, null);
+        this(null, null, null, null);
     }
 
     void run(@Observes @Priority(InitializedData.PRIORITY + 1) @Initialized(ApplicationScoped.class) Object event) {
@@ -58,6 +61,10 @@ public class ServicesDemo {
         log("=== Wszystkie ryby ===");
         fishService.findAll().forEach(f -> log("  " + f));
 
+        log("=== Ryby kazdego uzytkownika (druga strona zwiazku uzytkownik - ryba) ===");
+        userService.findAll().forEach(u -> log("  " + u.getLogin() + ": "
+                + u.getFish().stream().map(Fish::getSpecies).toList()));
+
         Aquarium amazon = aquariumService.findAll().stream()
                 .filter(a -> a.getName().equals("Amazonka")).findFirst().orElseThrow();
         log("=== Ryby w akwarium '" + amazon.getName() + "' ===");
@@ -65,7 +72,7 @@ public class ServicesDemo {
 
         log("=== Dodanie ryby do akwarium '" + amazon.getName() + "' ===");
         Fish guppy = new Fish(UUID.randomUUID(), "Gupik", 4.0, LocalDateTime.now(), 10,
-                Temperament.PEACEFUL, amazon);
+                Temperament.PEACEFUL, amazon, null);
         fishService.create(guppy);
         fishService.findAllByAquarium(amazon.getId()).orElseThrow().forEach(f -> log("  " + f));
 
@@ -82,7 +89,7 @@ public class ServicesDemo {
         Aquarium temporary = new Aquarium(UUID.randomUUID(), "Tymczasowe", 60, 24.0, true);
         aquariumService.create(temporary);
         fishService.create(new Fish(UUID.randomUUID(), "Danio", 5.0, LocalDateTime.now(), 8,
-                Temperament.PEACEFUL, temporary));
+                Temperament.PEACEFUL, temporary, null));
         log("  ryb w '" + temporary.getName() + "' przed usunieciem: "
                 + fishService.findAllByAquarium(temporary.getId()).orElseThrow().size());
         aquariumService.delete(temporary.getId());

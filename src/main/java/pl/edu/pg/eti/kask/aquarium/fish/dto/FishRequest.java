@@ -17,7 +17,7 @@ public record FishRequest(@NotBlank String species, @Positive Double lengthCm, L
                           @Positive Integer quantity, Temperament temperament) {
 
     public Fish toEntity(Aquarium aquarium) {
-        return new Fish(UUID.randomUUID(), species, lengthCm, purchaseDate, quantity, temperament, aquarium);
+        return new Fish(UUID.randomUUID(), species, lengthCm, purchaseDate, quantity, temperament, aquarium, null);
     }
 
     /** Copies the new values, the fish stays in its aquarium. */

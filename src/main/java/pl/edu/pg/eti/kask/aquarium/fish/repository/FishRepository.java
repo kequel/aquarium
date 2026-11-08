@@ -3,7 +3,6 @@ package pl.edu.pg.eti.kask.aquarium.fish.repository;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import pl.edu.pg.eti.kask.aquarium.aquarium.entity.Aquarium;
 import pl.edu.pg.eti.kask.aquarium.fish.entity.Fish;
 import pl.edu.pg.eti.kask.aquarium.repository.Repository;
 
@@ -25,12 +24,6 @@ public class FishRepository implements Repository<Fish, UUID> {
     @Override
     public List<Fish> findAll() {
         return em.createQuery("select f from Fish f order by f.species", Fish.class).getResultList();
-    }
-
-    public List<Fish> findAllByAquarium(Aquarium aquarium) {
-        return em.createQuery("select f from Fish f where f.aquarium = :aquarium order by f.species", Fish.class)
-                .setParameter("aquarium", aquarium)
-                .getResultList();
     }
 
     @Override

@@ -32,6 +32,8 @@
                 <dd>#{fishView.fish.quantity}</dd>
                 <dt>Temperament</dt>
                 <dd>#{fishView.fish.temperament}</dd>
+                <dt>Właściciel</dt>
+                <dd>#{empty fishView.fish.user ? 'brak' : fishView.fish.user.login}</dd>
                 <dt>Akwarium</dt>
                 <dd>
                     <h:link outcome="/aquarium/view" value="#{fishView.fish.aquarium.name}">

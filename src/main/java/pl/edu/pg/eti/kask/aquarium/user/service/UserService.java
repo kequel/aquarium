@@ -54,12 +54,16 @@ public class UserService {
     }
 
     /**
+     * Deletes the user. The user's fish stay in their aquariums, they just lose their owner.
+     *
      * @throws NotFoundException if the user does not exist
      */
     @Transactional
     public void delete(UUID id) {
         User user = repository.find(id)
                 .orElseThrow(() -> new NotFoundException("User " + id + " not found"));
+        user.getFish().forEach(fish -> fish.setUser(null));
+        user.getFish().clear();
         repository.delete(user);
     }
 }
