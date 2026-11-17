@@ -162,6 +162,10 @@ public class ApiServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Field 'login' is required");
             return;
         }
+        if (body.password() == null || body.password().isBlank()) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Field 'password' is required");
+            return;
+        }
         User user = body.toEntity();
         try {
             userService.create(user);

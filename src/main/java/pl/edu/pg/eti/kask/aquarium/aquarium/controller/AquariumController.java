@@ -1,5 +1,6 @@
 package pl.edu.pg.eti.kask.aquarium.aquarium.controller;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ import pl.edu.pg.eti.kask.aquarium.aquarium.dto.GetAquariumResponse;
 import pl.edu.pg.eti.kask.aquarium.aquarium.dto.GetAquariumsResponse;
 import pl.edu.pg.eti.kask.aquarium.aquarium.entity.Aquarium;
 import pl.edu.pg.eti.kask.aquarium.aquarium.service.AquariumService;
+import pl.edu.pg.eti.kask.aquarium.security.UserRoles;
 
 import java.net.URI;
 import java.util.UUID;
@@ -29,6 +31,8 @@ import java.util.UUID;
 /**
  * REST controller for aquariums (categories): /api/aquariums.
  * A missing aquarium gives 404, an invalid body gives 400 (thrown and mapped by JAX-RS).
+ * Every user can read aquariums, only an administrator can add, change and delete them
+ * (no token: 401, wrong role: 403).
  */
 @Path("/aquariums")
 @RequestScoped
@@ -50,6 +54,7 @@ public class AquariumController {
 
     /** GET /aquariums -> 200 */
     @GET
+    @RolesAllowed({UserRoles.ADMIN, UserRoles.USER})
     public GetAquariumsResponse getAquariums() {
         return GetAquariumsResponse.from(aquariumService.findAll());
     }
@@ -57,6 +62,7 @@ public class AquariumController {
     /** GET /aquariums/{id} -> 200 or 404 */
     @GET
     @Path("/{id}")
+    @RolesAllowed({UserRoles.ADMIN, UserRoles.USER})
     public GetAquariumResponse getAquarium(@PathParam("id") UUID id) {
         return aquariumService.find(id)
                 .map(GetAquariumResponse::from)
@@ -65,6 +71,7 @@ public class AquariumController {
 
     /** POST /aquariums -> 201 with the Location header of the new aquarium */
     @POST
+    @RolesAllowed(UserRoles.ADMIN)
     public Response postAquarium(@NotNull @Valid AquariumRequest request, @Context UriInfo uriInfo) {
         Aquarium aquarium = request.toEntity();
         aquariumService.create(aquarium);
@@ -75,6 +82,7 @@ public class AquariumController {
     /** PUT /aquariums/{id} -> 204 or 404 */
     @PUT
     @Path("/{id}")
+    @RolesAllowed(UserRoles.ADMIN)
     public void putAquarium(@PathParam("id") UUID id, @NotNull @Valid AquariumRequest request) {
         Aquarium aquarium = aquariumService.find(id).orElseThrow(NotFoundException::new);
         request.applyTo(aquarium);
@@ -84,6 +92,7 @@ public class AquariumController {
     /** DELETE /aquariums/{id} -> 204 or 404, the fish of the aquarium are deleted too */
     @DELETE
     @Path("/{id}")
+    @RolesAllowed(UserRoles.ADMIN)
     public void deleteAquarium(@PathParam("id") UUID id) {
         aquariumService.find(id).orElseThrow(NotFoundException::new);
         aquariumService.delete(id);

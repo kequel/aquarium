@@ -3,6 +3,7 @@ package pl.edu.pg.eti.kask.aquarium.user.service;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.mindrot.jbcrypt.BCrypt;
 import pl.edu.pg.eti.kask.aquarium.exception.AlreadyExistsException;
 import pl.edu.pg.eti.kask.aquarium.exception.NotFoundException;
 import pl.edu.pg.eti.kask.aquarium.user.entity.User;
@@ -43,6 +44,9 @@ public class UserService {
     }
 
     /**
+     * Registers a user. Not secured: everybody can register. The password is given in plain text and only its
+     * BCrypt hash is stored.
+     *
      * @throws AlreadyExistsException if a user with the same login already exists
      */
     @Transactional
@@ -50,6 +54,7 @@ public class UserService {
         if (repository.findByLogin(user.getLogin()).isPresent()) {
             throw new AlreadyExistsException("User with login " + user.getLogin() + " already exists");
         }
+        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
         repository.create(user);
     }
 

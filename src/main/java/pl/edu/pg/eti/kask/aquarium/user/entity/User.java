@@ -37,6 +37,10 @@ public class User implements Serializable {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    /** BCrypt hash of the password, checked by the identity provider when the user logs in. */
+    @Column(nullable = false)
+    private String password;
+
     /** Fish owned by the user, loaded only when needed (LAZY, the default for collections). */
     @OneToMany(mappedBy = "user")
     private List<Fish> fish = new ArrayList<>();
@@ -66,6 +70,9 @@ public class User implements Serializable {
 
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
     public List<Fish> getFish() { return fish; }
 

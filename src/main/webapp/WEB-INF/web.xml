@@ -14,6 +14,27 @@
     </context-param>
 
     <!--
+        Identity provider (separate Spring Boot project, identity-provider folder). Tokens must be issued by it
+        and signed with one of the keys published at the JWKS address.
+    -->
+    <context-param>
+        <param-name>jwtIssuer</param-name>
+        <param-value>http://localhost:9000</param-value>
+    </context-param>
+    <context-param>
+        <param-name>jwtJwksUri</param-name>
+        <param-value>http://localhost:9000/oauth2/jwks</param-value>
+    </context-param>
+
+    <!-- Roles used in @RolesAllowed, the same as the groups in the token. -->
+    <security-role>
+        <role-name>ADMIN</role-name>
+    </security-role>
+    <security-role>
+        <role-name>USER</role-name>
+    </security-role>
+
+    <!--
         H2 database stored in a file (~/jee-aquarium-db.mv.db), started in embedded mode
         together with the application server. AUTO_SERVER lets other tools (e.g. the IntelliJ
         Database window) open the same file while the application is running.

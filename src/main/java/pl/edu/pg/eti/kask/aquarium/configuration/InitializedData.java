@@ -1,16 +1,16 @@
 package pl.edu.pg.eti.kask.aquarium.configuration;
 
-import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Initialized;
 import jakarta.enterprise.context.control.RequestContextController;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import pl.edu.pg.eti.kask.aquarium.aquarium.entity.Aquarium;
-import pl.edu.pg.eti.kask.aquarium.aquarium.service.AquariumService;
+import pl.edu.pg.eti.kask.aquarium.aquarium.repository.AquariumRepository;
 import pl.edu.pg.eti.kask.aquarium.fish.entity.Fish;
 import pl.edu.pg.eti.kask.aquarium.fish.entity.Temperament;
-import pl.edu.pg.eti.kask.aquarium.fish.service.FishService;
+import pl.edu.pg.eti.kask.aquarium.fish.repository.FishRepository;
 import pl.edu.pg.eti.kask.aquarium.user.entity.Role;
 import pl.edu.pg.eti.kask.aquarium.user.entity.User;
 import pl.edu.pg.eti.kask.aquarium.user.service.UserService;
@@ -21,24 +21,24 @@ import java.util.UUID;
 
 /**
  * Loads test data when the application starts. Fixed UUIDs keep request.http usable between restarts.
+ * Aquarium and fish services are secured and nobody is logged in during startup, so aquariums and fish are
+ * saved with repositories, in one transaction. Users are registered with the (unsecured) user service,
+ * which stores password hashes. Password of every test user is the same as the login.
  */
 @ApplicationScoped
 public class InitializedData {
 
-    /** Observer priority: lower runs first, so data is loaded before {@link ServicesDemo}. */
-    static final int PRIORITY = 100;
-
     private final UserService userService;
-    private final AquariumService aquariumService;
-    private final FishService fishService;
+    private final AquariumRepository aquariumRepository;
+    private final FishRepository fishRepository;
     private final RequestContextController requestContextController;
 
     @Inject
-    public InitializedData(UserService userService, AquariumService aquariumService, FishService fishService,
-                           RequestContextController requestContextController) {
+    public InitializedData(UserService userService, AquariumRepository aquariumRepository,
+                           FishRepository fishRepository, RequestContextController requestContextController) {
         this.userService = userService;
-        this.aquariumService = aquariumService;
-        this.fishService = fishService;
+        this.aquariumRepository = aquariumRepository;
+        this.fishRepository = fishRepository;
         this.requestContextController = requestContextController;
     }
 
@@ -47,7 +47,8 @@ public class InitializedData {
         this(null, null, null, null);
     }
 
-    void init(@Observes @Priority(PRIORITY) @Initialized(ApplicationScoped.class) Object event) {
+    @Transactional
+    void init(@Observes @Initialized(ApplicationScoped.class) Object event) {
         // Repositories are request scoped, and there is no HTTP request during startup.
         requestContextController.activate();
         try {
@@ -68,10 +69,10 @@ public class InitializedData {
             "bob", "bob@example.com", LocalDate.of(1999, 7, 4), Role.USER);
 
     private void loadUsers() {
-        userService.create(admin);
-        userService.create(kevin);
-        userService.create(alice);
-        userService.create(bob);
+        for (User user : new User[]{admin, kevin, alice, bob}) {
+            user.setPassword(user.getLogin());
+            userService.create(user);
+        }
     }
 
     /** Every fish has an owner: kevin has 2 fish, alice 2, bob 1, admin none. */
@@ -82,19 +83,26 @@ public class InitializedData {
                 "Rafa koralowa", 400, 25.0, false);
         Aquarium pond = new Aquarium(UUID.fromString("2c8b6e4f-1a9d-4b73-a5e0-6f3c2d8b9a03"),
                 "Oczko wodne", 1500, 18.0, true);
-        aquariumService.create(amazon);
-        aquariumService.create(reef);
-        aquariumService.create(pond);
+        aquariumRepository.create(amazon);
+        aquariumRepository.create(reef);
+        aquariumRepository.create(pond);
 
-        fishService.create(new Fish(UUID.fromString("a1b2c3d4-0001-4000-8000-000000000001"),
+        addFish(new Fish(UUID.fromString("a1b2c3d4-0001-4000-8000-000000000001"),
                 "Neon Innesa", 3.5, LocalDateTime.of(2024, 5, 12, 14, 30), 15, Temperament.PEACEFUL, amazon, kevin));
-        fishService.create(new Fish(UUID.fromString("a1b2c3d4-0002-4000-8000-000000000002"),
+        addFish(new Fish(UUID.fromString("a1b2c3d4-0002-4000-8000-000000000002"),
                 "Skalar", 12.0, LocalDateTime.of(2024, 6, 3, 10, 0), 4, Temperament.SEMI_AGGRESSIVE, amazon, kevin));
-        fishService.create(new Fish(UUID.fromString("a1b2c3d4-0003-4000-8000-000000000003"),
+        addFish(new Fish(UUID.fromString("a1b2c3d4-0003-4000-8000-000000000003"),
                 "Błazenek", 8.0, LocalDateTime.of(2025, 2, 20, 16, 45), 2, Temperament.SEMI_AGGRESSIVE, reef, alice));
-        fishService.create(new Fish(UUID.fromString("a1b2c3d4-0004-4000-8000-000000000004"),
+        addFish(new Fish(UUID.fromString("a1b2c3d4-0004-4000-8000-000000000004"),
                 "Pokolec królewski", 15.0, LocalDateTime.of(2025, 3, 8, 11, 15), 1, Temperament.PEACEFUL, reef, alice));
-        fishService.create(new Fish(UUID.fromString("a1b2c3d4-0005-4000-8000-000000000005"),
+        addFish(new Fish(UUID.fromString("a1b2c3d4-0005-4000-8000-000000000005"),
                 "Karp koi", 45.0, LocalDateTime.of(2023, 8, 1, 9, 0), 6, Temperament.PEACEFUL, pond, bob));
+    }
+
+    /** Saves a fish and adds it to the fish lists of its aquarium and owner (both sides of the relations). */
+    private void addFish(Fish fish) {
+        fish.getAquarium().getFish().add(fish);
+        fish.getUser().getFish().add(fish);
+        fishRepository.create(fish);
     }
 }

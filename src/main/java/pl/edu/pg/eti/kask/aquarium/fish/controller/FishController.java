@@ -1,5 +1,6 @@
 package pl.edu.pg.eti.kask.aquarium.fish.controller;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -24,6 +25,7 @@ import pl.edu.pg.eti.kask.aquarium.fish.dto.GetFishResponse;
 import pl.edu.pg.eti.kask.aquarium.fish.dto.GetFishesResponse;
 import pl.edu.pg.eti.kask.aquarium.fish.entity.Fish;
 import pl.edu.pg.eti.kask.aquarium.fish.service.FishService;
+import pl.edu.pg.eti.kask.aquarium.security.UserRoles;
 
 import java.net.URI;
 import java.util.UUID;
@@ -31,6 +33,8 @@ import java.util.UUID;
 /**
  * REST controller for fish (elements), nested under their aquarium: /api/aquariums/{aquariumId}/fish.
  * The aquarium always comes from the address, never from the request body.
+ * Only logged-in users (no token: 401). Which fish a user may see and change is decided by {@link FishService}
+ * (somebody else's fish: 403).
  */
 @Path("/aquariums/{aquariumId}/fish")
 @RequestScoped
@@ -54,6 +58,7 @@ public class FishController {
 
     /** GET /aquariums/{aquariumId}/fish -> 200, or 404 if the aquarium does not exist */
     @GET
+    @RolesAllowed({UserRoles.ADMIN, UserRoles.USER})
     public GetFishesResponse getFishes(@PathParam("aquariumId") UUID aquariumId) {
         return fishService.findAllByAquarium(aquariumId)
                 .map(GetFishesResponse::from)
@@ -62,6 +67,7 @@ public class FishController {
 
     /** GET /aquariums/{aquariumId}/fish/{id} -> 200, or 404 if there is no such fish in this aquarium */
     @GET
+    @RolesAllowed({UserRoles.ADMIN, UserRoles.USER})
     @Path("/{id}")
     public GetFishResponse getFish(@PathParam("aquariumId") UUID aquariumId, @PathParam("id") UUID id) {
         return fishService.find(aquariumId, id)
@@ -71,6 +77,7 @@ public class FishController {
 
     /** POST /aquariums/{aquariumId}/fish -> 201 with the Location header, or 404 if the aquarium does not exist */
     @POST
+    @RolesAllowed({UserRoles.ADMIN, UserRoles.USER})
     public Response postFish(@PathParam("aquariumId") UUID aquariumId, @NotNull @Valid FishRequest request,
                              @Context UriInfo uriInfo) {
         Aquarium aquarium = aquariumService.find(aquariumId).orElseThrow(NotFoundException::new);
@@ -82,6 +89,7 @@ public class FishController {
 
     /** PUT /aquariums/{aquariumId}/fish/{id} -> 204, or 404 if there is no such fish in this aquarium */
     @PUT
+    @RolesAllowed({UserRoles.ADMIN, UserRoles.USER})
     @Path("/{id}")
     public void putFish(@PathParam("aquariumId") UUID aquariumId, @PathParam("id") UUID id,
                         @NotNull @Valid FishRequest request) {
@@ -92,6 +100,7 @@ public class FishController {
 
     /** DELETE /aquariums/{aquariumId}/fish/{id} -> 204, or 404 if there is no such fish in this aquarium */
     @DELETE
+    @RolesAllowed({UserRoles.ADMIN, UserRoles.USER})
     @Path("/{id}")
     public void deleteFish(@PathParam("aquariumId") UUID aquariumId, @PathParam("id") UUID id) {
         fishService.find(aquariumId, id).orElseThrow(NotFoundException::new);

@@ -1,135 +1,142 @@
-@baseUrl = http://localhost:8080/lab5/api
-@userId = 81e1c2a9-7f57-439b-b53d-6db88b071e4e
+@app = http://localhost:8080/lab6/api
+@idp = http://localhost:9000
 @unknownId = 00000000-0000-0000-0000-000000000000
-@aquariumId = 5d1f2b8a-3c47-4e0d-9a61-7b2e8f4c1a01
-@fishId = a1b2c3d4-0001-4000-8000-000000000001
-@otherAquariumFishId = a1b2c3d4-0003-4000-8000-000000000003
+@amazonId = 5d1f2b8a-3c47-4e0d-9a61-7b2e8f4c1a01
+@reefId = 9a7e4c12-6b3d-4f85-8e2a-1c9d5b7f3a02
+@neonId = a1b2c3d4-0001-4000-8000-000000000001
+@skalarId = a1b2c3d4-0002-4000-8000-000000000002
+@blazenekId = a1b2c3d4-0003-4000-8000-000000000003
+@pokolecId = a1b2c3d4-0004-4000-8000-000000000004
 
-### Lista użytkowników -> 200, application/json
-GET {{baseUrl}}/users
+# Użytkownicy testowi (hasło = login): admin (ADMIN), kevin, alice, bob (USER).
+# Ryby: kevin - Neon i Skalar (Amazonka), alice - Błazenek i Pokolec (Rafa), bob - Karp (Oczko wodne).
+# Najpierw uruchom oba serwery: lab6 (Payara, port 8080) i identity-provider (port 9000).
+# Klikaj po kolei: żądania "Token ..." zapamiętują tokeny, następne z nich korzystają.
 
-### Pojedynczy użytkownik -> 200, application/json
-GET {{baseUrl}}/users/{{userId}}
+### ================= 1. Dostawca tożsamości (OpenID Connect) =================
 
-### Nieistniejący użytkownik -> 404
-GET {{baseUrl}}/users/{{unknownId}}
+### Opis dostawcy (adresy, obsługiwane rzeczy) -> 200
+GET {{idp}}/.well-known/openid-configuration
 
-### Avatar przed wgraniem -> 404
-GET {{baseUrl}}/users/{{userId}}/avatar
+### Klucze publiczne, którymi aplikacja sprawdza podpis tokenów -> 200
+GET {{idp}}/oauth2/jwks
 
-### Nadpisanie nieistniejącego avatara -> 404
-PUT {{baseUrl}}/users/{{userId}}/avatar
-Content-Type: image/png
+### Token admina -> 200, w odpowiedzi access_token
+POST {{idp}}/oauth2/token
+Authorization: Basic aquarium secret
+Content-Type: application/x-www-form-urlencoded
 
-< ./avatars/avatar1.png
+grant_type=password&username=admin&password=admin
 
-### Wgranie avatara -> 201, nagłówek Location
-POST {{baseUrl}}/users/{{userId}}/avatar
-Content-Type: image/png
+> {% client.global.set("adminToken", response.body.access_token); %}
 
-< ./avatars/avatar1.png
+### Token kevina -> 200
+POST {{idp}}/oauth2/token
+Authorization: Basic aquarium secret
+Content-Type: application/x-www-form-urlencoded
 
-### Ponowne wgranie, gdy avatar już istnieje -> 409
-POST {{baseUrl}}/users/{{userId}}/avatar
-Content-Type: image/png
+grant_type=password&username=kevin&password=kevin
 
-< ./avatars/avatar1.png
+> {% client.global.set("kevinToken", response.body.access_token); %}
 
-### Pobranie avatara -> 200, image/png (niebieski)
-GET {{baseUrl}}/users/{{userId}}/avatar
+### Token alice -> 200
+POST {{idp}}/oauth2/token
+Authorization: Basic aquarium secret
+Content-Type: application/x-www-form-urlencoded
 
-### Nadpisanie avatara -> 204
-PUT {{baseUrl}}/users/{{userId}}/avatar
-Content-Type: image/png
+grant_type=password&username=alice&password=alice
 
-< ./avatars/avatar2.png
+> {% client.global.set("aliceToken", response.body.access_token); %}
 
-### Pobranie nadpisanego avatara -> 200, image/png (czerwony)
-GET {{baseUrl}}/users/{{userId}}/avatar
+### Złe hasło -> 400, invalid_grant
+POST {{idp}}/oauth2/token
+Authorization: Basic aquarium secret
+Content-Type: application/x-www-form-urlencoded
 
-### Zły typ treści -> 415
-POST {{baseUrl}}/users/{{userId}}/avatar
-Content-Type: text/plain
+grant_type=password&username=kevin&password=zle
 
-to nie jest obrazek
+### Zły sekret aplikacji klienckiej -> 401
+POST {{idp}}/oauth2/token
+Authorization: Basic aquarium zly-sekret
+Content-Type: application/x-www-form-urlencoded
 
-### Avatar nieistniejącego użytkownika -> 404
-POST {{baseUrl}}/users/{{unknownId}}/avatar
-Content-Type: image/png
+grant_type=password&username=kevin&password=kevin
 
-< ./avatars/avatar1.png
+### ================= 2. Rejestracja (bez tokenu) =================
 
-### Usunięcie avatara -> 204
-DELETE {{baseUrl}}/users/{{userId}}/avatar
-
-### Ponowne usunięcie -> 404
-DELETE {{baseUrl}}/users/{{userId}}/avatar
-
-### Niedozwolona metoda na kolekcji -> 405
-DELETE {{baseUrl}}/users
-
-### Dodanie użytkownika -> 201, nagłówek Location, w treści nowy użytkownik
-POST {{baseUrl}}/users
+### Rejestracja nowego użytkownika -> 201, rola zawsze USER
+POST {{app}}/users
 Content-Type: application/json
 
 {
   "login": "nemo",
   "email": "nemo@example.com",
   "birthDate": "2003-05-30",
-  "role": "USER"
+  "password": "nemo"
 }
 
-> {% client.global.set("newUserId", response.body.id); %}
-
-### Ponowne dodanie z tym samym loginem -> 409
-POST {{baseUrl}}/users
+### Ponowna rejestracja z tym samym loginem -> 409
+POST {{app}}/users
 Content-Type: application/json
 
 {
   "login": "nemo",
-  "email": "inny@example.com",
-  "birthDate": "2003-05-30",
-  "role": "USER"
+  "password": "inne"
 }
 
-### Dodanie bez loginu -> 400
-POST {{baseUrl}}/users
+### Rejestracja bez hasła -> 400
+POST {{app}}/users
 Content-Type: application/json
 
 {
-  "email": "bezloginu@example.com"
+  "login": "bezhasla"
 }
 
-### Nowy użytkownik jest na liście -> 200 (5 użytkowników)
-GET {{baseUrl}}/users
+### Nowy użytkownik od razu może się zalogować -> 200
+POST {{idp}}/oauth2/token
+Authorization: Basic aquarium secret
+Content-Type: application/x-www-form-urlencoded
 
-### Pobranie nowego użytkownika -> 200
-GET {{baseUrl}}/users/{{newUserId}}
+grant_type=password&username=nemo&password=nemo
 
-### Usunięcie nowego użytkownika -> 204
-DELETE {{baseUrl}}/users/{{newUserId}}
+> {% client.global.set("nemoToken", response.body.access_token); %}
 
-### Pobranie usuniętego użytkownika -> 404
-GET {{baseUrl}}/users/{{newUserId}}
+### Nowy użytkownik nie ma jeszcze ryb -> 200, pusta lista
+GET {{app}}/fish
+Authorization: Bearer {{nemoToken}}
 
-### Ponowne usunięcie -> 404
-DELETE {{baseUrl}}/users/{{newUserId}}
+### ================= 3. Uwierzytelnianie =================
 
+### Bez tokenu -> 401
+GET {{app}}/aquariums
 
+### Zły token -> 401
+GET {{app}}/aquariums
+Authorization: Bearer to.nie.jest-token
 
-### ================= Akwaria (kategorie) =================
+### ================= 4. Kategorie (akwaria) =================
 
-### Lista akwariów (bez ryb) -> 200
-GET {{baseUrl}}/aquariums
+### Zwykły użytkownik pobiera wszystkie akwaria -> 200
+GET {{app}}/aquariums
+Authorization: Bearer {{kevinToken}}
 
-### Jedno akwarium -> 200
-GET {{baseUrl}}/aquariums/{{aquariumId}}
+### Zwykły użytkownik pobiera jedno akwarium -> 200
+GET {{app}}/aquariums/{{amazonId}}
+Authorization: Bearer {{kevinToken}}
 
-### Nieistniejące akwarium -> 404
-GET {{baseUrl}}/aquariums/{{unknownId}}
+### Zwykły użytkownik NIE może dodać akwarium -> 403
+POST {{app}}/aquariums
+Authorization: Bearer {{kevinToken}}
+Content-Type: application/json
 
-### Dodanie akwarium -> 201, nagłówek Location
-POST {{baseUrl}}/aquariums
+{
+  "name": "Akwarium kevina",
+  "volumeLiters": 60
+}
+
+### Administrator dodaje akwarium -> 201
+POST {{app}}/aquariums
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
@@ -141,136 +148,107 @@ Content-Type: application/json
 
 > {% client.global.set("newAquariumId", response.body.id); %}
 
-### Dodanie akwarium bez nazwy -> 400
-POST {{baseUrl}}/aquariums
+### Zwykły użytkownik NIE może usunąć akwarium -> 403
+DELETE {{app}}/aquariums/{{newAquariumId}}
+Authorization: Bearer {{kevinToken}}
+
+### Administrator usuwa akwarium -> 204
+DELETE {{app}}/aquariums/{{newAquariumId}}
+Authorization: Bearer {{adminToken}}
+
+### ================= 5. Elementy (ryby) =================
+
+### Administrator pobiera wszystkie ryby -> 200, 5 ryb
+GET {{app}}/fish
+Authorization: Bearer {{adminToken}}
+
+### Kevin pobiera tylko swoje ryby -> 200, Neon i Skalar
+GET {{app}}/fish
+Authorization: Bearer {{kevinToken}}
+
+### Alice pobiera tylko swoje ryby -> 200, Błazenek i Pokolec
+GET {{app}}/fish
+Authorization: Bearer {{aliceToken}}
+
+### Administrator: ryby w Amazonce -> 200, 2 ryby
+GET {{app}}/aquariums/{{amazonId}}/fish
+Authorization: Bearer {{adminToken}}
+
+### Alice: ryby w Amazonce -> 200, pusta lista (nie ma tam swoich ryb)
+GET {{app}}/aquariums/{{amazonId}}/fish
+Authorization: Bearer {{aliceToken}}
+
+### Kevin pobiera swoją rybę -> 200, owner: kevin
+GET {{app}}/aquariums/{{amazonId}}/fish/{{neonId}}
+Authorization: Bearer {{kevinToken}}
+
+### Kevin NIE może pobrać ryby alice -> 403
+GET {{app}}/aquariums/{{reefId}}/fish/{{blazenekId}}
+Authorization: Bearer {{kevinToken}}
+
+### Kevin dodaje rybę -> 201, właściciel ustawiony automatycznie: kevin
+POST {{app}}/aquariums/{{reefId}}/fish
+Authorization: Bearer {{kevinToken}}
 Content-Type: application/json
 
 {
-  "volumeLiters": 60
-}
-
-### Treść, która nie jest poprawnym JSON-em -> 400
-POST {{baseUrl}}/aquariums
-Content-Type: application/json
-
-{ to nie jest json
-
-### Modyfikacja akwarium -> 204
-PUT {{baseUrl}}/aquariums/{{newAquariumId}}
-Content-Type: application/json
-
-{
-  "name": "Krewetkarium duże",
-  "volumeLiters": 112,
-  "temperature": 24.0,
-  "freshwater": true
-}
-
-### Akwarium po modyfikacji -> 200
-GET {{baseUrl}}/aquariums/{{newAquariumId}}
-
-### Modyfikacja nieistniejącego akwarium -> 404
-PUT {{baseUrl}}/aquariums/{{unknownId}}
-Content-Type: application/json
-
-{
-  "name": "Duch",
-  "volumeLiters": 10,
-  "temperature": 20.0,
-  "freshwater": true
-}
-
-### ================= Ryby (elementy) =================
-
-### Ryby w akwarium -> 200
-GET {{baseUrl}}/aquariums/{{aquariumId}}/fish
-
-### Ryby w nieistniejącym akwarium -> 404
-GET {{baseUrl}}/aquariums/{{unknownId}}/fish
-
-### Jedna ryba -> 200
-GET {{baseUrl}}/aquariums/{{aquariumId}}/fish/{{fishId}}
-
-### Ryba z innego akwarium pod tym adresem -> 404
-GET {{baseUrl}}/aquariums/{{aquariumId}}/fish/{{otherAquariumFishId}}
-
-### Dodanie ryby do nowego akwarium -> 201, nagłówek Location (akwarium wynika z adresu)
-POST {{baseUrl}}/aquariums/{{newAquariumId}}/fish
-Content-Type: application/json
-
-{
-  "species": "Krewetka red cherry",
-  "lengthCm": 2.5,
-  "purchaseDate": "2026-11-03T12:00:00",
-  "quantity": 10,
+  "species": "Gupik",
+  "lengthCm": 4.0,
+  "purchaseDate": "2026-11-17T12:00:00",
+  "quantity": 3,
   "temperament": "PEACEFUL"
 }
 
-> {% client.global.set("newFishId", response.body.id); %}
+> {% client.global.set("kevinFishId", response.body.id); %}
 
-### Dodanie ryby bez gatunku -> 400
-POST {{baseUrl}}/aquariums/{{newAquariumId}}/fish
+### Kevin zmienia swoją rybę -> 204
+PUT {{app}}/aquariums/{{reefId}}/fish/{{kevinFishId}}
+Authorization: Bearer {{kevinToken}}
 Content-Type: application/json
 
 {
-  "quantity": 3
+  "species": "Gupik Endlera",
+  "lengthCm": 3.0,
+  "purchaseDate": "2026-11-17T12:00:00",
+  "quantity": 5,
+  "temperament": "PEACEFUL"
 }
 
-### Dodanie ryby do nieistniejącego akwarium -> 404
-POST {{baseUrl}}/aquariums/{{unknownId}}/fish
+### Kevin NIE może zmienić ryby alice -> 403
+PUT {{app}}/aquariums/{{reefId}}/fish/{{blazenekId}}
+Authorization: Bearer {{kevinToken}}
 Content-Type: application/json
 
 {
-  "species": "Zagubiona",
+  "species": "Ryba kevina",
   "quantity": 1
 }
 
-### Modyfikacja ryby -> 204 (pole "aquarium" jest ignorowane, ryba zostaje w swoim akwarium)
-PUT {{baseUrl}}/aquariums/{{newAquariumId}}/fish/{{newFishId}}
+### Administrator zmienia rybę kevina -> 204
+PUT {{app}}/aquariums/{{amazonId}}/fish/{{skalarId}}
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "species": "Krewetka blue dream",
-  "lengthCm": 3.0,
-  "purchaseDate": "2026-11-03T12:00:00",
-  "quantity": 20,
-  "temperament": "PEACEFUL",
-  "aquarium": "{{aquariumId}}"
+  "species": "Skalar",
+  "lengthCm": 12.0,
+  "purchaseDate": "2024-06-03T10:00:00",
+  "quantity": 6,
+  "temperament": "SEMI_AGGRESSIVE"
 }
 
-### Ryba po modyfikacji -> 200
-GET {{baseUrl}}/aquariums/{{newAquariumId}}/fish/{{newFishId}}
+### Kevin NIE może usunąć ryby alice -> 403
+DELETE {{app}}/aquariums/{{reefId}}/fish/{{pokolecId}}
+Authorization: Bearer {{kevinToken}}
 
-### Usunięcie ryby -> 204
-DELETE {{baseUrl}}/aquariums/{{newAquariumId}}/fish/{{newFishId}}
+### Administrator usuwa rybę alice -> 204
+DELETE {{app}}/aquariums/{{reefId}}/fish/{{pokolecId}}
+Authorization: Bearer {{adminToken}}
 
-### Ponowne usunięcie ryby -> 404
-DELETE {{baseUrl}}/aquariums/{{newAquariumId}}/fish/{{newFishId}}
+### Kevin usuwa swoją rybę -> 204
+DELETE {{app}}/aquariums/{{reefId}}/fish/{{kevinFishId}}
+Authorization: Bearer {{kevinToken}}
 
-### ================= Usunięcie akwarium razem z rybami =================
-
-### Ryby w akwarium "Amazonka" przed usunięciem -> 200 (2 ryby)
-GET {{baseUrl}}/aquariums/{{aquariumId}}/fish
-
-### Usunięcie akwarium -> 204
-DELETE {{baseUrl}}/aquariums/{{aquariumId}}
-
-### Usunięte akwarium -> 404
-GET {{baseUrl}}/aquariums/{{aquariumId}}
-
-### Ryba z usuniętego akwarium też zniknęła -> 404
-GET {{baseUrl}}/aquariums/{{aquariumId}}/fish/{{fishId}}
-
-### Ponowne usunięcie akwarium -> 404
-DELETE {{baseUrl}}/aquariums/{{aquariumId}}
-
-### ================= Związek użytkownik – ryba =================
-
-### Ryby w "Rafie koralowej" (właścicielka: alice) -> 200, 2 ryby
-GET {{baseUrl}}/aquariums/9a7e4c12-6b3d-4f85-8e2a-1c9d5b7f3a02/fish
-
-### Usunięcie użytkownika alice, który ma ryby -> 204
-DELETE {{baseUrl}}/users/ed6cfb2a-cad7-47dd-9b56-9d1e3c7a4197
-
-### Ryby alice zostają w akwarium, tylko bez właściciela -> 200, nadal 2 ryby
-GET {{baseUrl}}/aquariums/9a7e4c12-6b3d-4f85-8e2a-1c9d5b7f3a02/fish
+### Ryby kevina po zmianach -> 200, Neon i Skalar (6 sztuk)
+GET {{app}}/fish
+Authorization: Bearer {{kevinToken}}

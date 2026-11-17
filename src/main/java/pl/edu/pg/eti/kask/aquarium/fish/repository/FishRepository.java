@@ -3,6 +3,7 @@ package pl.edu.pg.eti.kask.aquarium.fish.repository;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import pl.edu.pg.eti.kask.aquarium.aquarium.entity.Aquarium;
 import pl.edu.pg.eti.kask.aquarium.fish.entity.Fish;
 import pl.edu.pg.eti.kask.aquarium.repository.Repository;
 
@@ -24,6 +25,22 @@ public class FishRepository implements Repository<Fish, UUID> {
     @Override
     public List<Fish> findAll() {
         return em.createQuery("select f from Fish f order by f.species", Fish.class).getResultList();
+    }
+
+    /** Fish of one user, filtered by the database. */
+    public List<Fish> findAllByUser(String login) {
+        return em.createQuery("select f from Fish f where f.user.login = :login order by f.species", Fish.class)
+                .setParameter("login", login)
+                .getResultList();
+    }
+
+    /** Fish of one user in one aquarium, filtered by the database. */
+    public List<Fish> findAllByAquariumAndUser(Aquarium aquarium, String login) {
+        return em.createQuery("select f from Fish f where f.aquarium = :aquarium and f.user.login = :login"
+                        + " order by f.species", Fish.class)
+                .setParameter("aquarium", aquarium)
+                .setParameter("login", login)
+                .getResultList();
     }
 
     @Override

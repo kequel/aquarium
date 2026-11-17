@@ -1,19 +1,23 @@
 package pl.edu.pg.eti.kask.aquarium.aquarium.service;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ejb.LocalBean;
+import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import pl.edu.pg.eti.kask.aquarium.aquarium.entity.Aquarium;
 import pl.edu.pg.eti.kask.aquarium.aquarium.repository.AquariumRepository;
+import pl.edu.pg.eti.kask.aquarium.security.UserRoles;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Business logic for aquariums (categories).
+ * Business logic for aquariums (categories). A stateless EJB, so the server checks {@code @RolesAllowed}
+ * before every method (EJBAccessException if not allowed) and every method runs in a transaction.
  */
-@ApplicationScoped
+@LocalBean
+@Stateless
 public class AquariumService {
 
     private final AquariumRepository aquariumRepository;
@@ -23,25 +27,27 @@ public class AquariumService {
         this.aquariumRepository = aquariumRepository;
     }
 
-    /** Required by CDI to create a proxy of a normal scoped bean. */
-    protected AquariumService() {
+    /** Required by the EJB container. */
+    public AquariumService() {
         this(null);
     }
 
+    @RolesAllowed({UserRoles.ADMIN, UserRoles.USER})
     public List<Aquarium> findAll() {
         return aquariumRepository.findAll();
     }
 
+    @RolesAllowed({UserRoles.ADMIN, UserRoles.USER})
     public Optional<Aquarium> find(UUID id) {
         return aquariumRepository.find(id);
     }
 
-    @Transactional
+    @RolesAllowed(UserRoles.ADMIN)
     public void create(Aquarium aquarium) {
         aquariumRepository.create(aquarium);
     }
 
-    @Transactional
+    @RolesAllowed(UserRoles.ADMIN)
     public void update(Aquarium aquarium) {
         aquariumRepository.update(aquarium);
     }
@@ -50,7 +56,7 @@ public class AquariumService {
      * Deletes the aquarium. Its fish are deleted automatically (cascade REMOVE on {@code Aquarium.fish}),
      * here they are only removed from their owners' fish lists, so the other side of the relation stays correct.
      */
-    @Transactional
+    @RolesAllowed(UserRoles.ADMIN)
     public void delete(UUID id) {
         aquariumRepository.find(id).ifPresent(aquarium -> {
             aquarium.getFish().stream()
