@@ -98,8 +98,12 @@
         <url-pattern>*.xhtml</url-pattern>
     </servlet-mapping>
 
-    <!-- Keep the session id in a cookie only, so it is not appended to links as ;jsessionid=... -->
+    <!--
+        Session of 3 hours (the same as the tokens from the identity provider).
+        The session id is kept in a cookie only, so it is not appended to links as ;jsessionid=...
+    -->
     <session-config>
+        <session-timeout>180</session-timeout>
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>
 

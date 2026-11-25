@@ -50,6 +50,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -68,6 +69,9 @@ import java.util.UUID;
 public class SecurityConfig {
 
     public static final String ISSUER = "http://localhost:9000";
+
+    /** How long access and ID tokens are valid (also the session length, see application.properties). */
+    public static final Duration TOKEN_TIME_TO_LIVE = Duration.ofHours(3);
 
     /** Security of the provider's own endpoints (tokens, keys, OpenID Connect). */
     @Bean
@@ -140,16 +144,20 @@ public class SecurityConfig {
                 .redirectUri("http://localhost:8080/lab7/callback")
                 .scope(OidcScopes.OPENID)
                 .scope(OidcScopes.PROFILE)
-                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofHours(1)).build())
+                .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(TOKEN_TIME_TO_LIVE).build())
                 .build();
         return new InMemoryRegisteredClientRepository(aquarium);
     }
 
-    /** Puts the user's roles into every token as the {@code groups} claim. */
+    /**
+     * Puts the user's roles into every token as the {@code groups} claim. ID tokens are valid for 30 minutes
+     * by default, here every token gets the same validity as the access token.
+     */
     @Bean
     OAuth2TokenCustomizer<JwtEncodingContext> groupsClaim() {
-        return context -> context.getClaims().claim("groups",
-                AuthorityUtils.authorityListToSet(context.getPrincipal().getAuthorities()));
+        return context -> context.getClaims()
+                .claim("groups", AuthorityUtils.authorityListToSet(context.getPrincipal().getAuthorities()))
+                .expiresAt(Instant.now().plus(TOKEN_TIME_TO_LIVE));
     }
 
     /** Creates tokens: JWTs (access and ID tokens) and refresh tokens. */
