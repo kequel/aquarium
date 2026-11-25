@@ -97,12 +97,15 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /** Everything else (the login page): a form login. */
+    /**
+     * Everything else (the login page): a form login. If somebody logs in directly on the login page
+     * (not coming from the application), they are sent to the aquarium application afterwards.
+     */
     @Bean
     @Order(2)
     SecurityFilterChain defaultFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults());
+                .formLogin(form -> form.defaultSuccessUrl("http://localhost:8080/lab7/"));
         return http.build();
     }
 
