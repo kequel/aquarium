@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>pl.edu.pg.eti.kask</groupId>
-    <artifactId>lab6</artifactId>
+    <artifactId>lab7</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
@@ -37,7 +37,7 @@
     </dependencies>
 
     <build>
-        <finalName>lab6</finalName>
+        <finalName>lab7</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -47,7 +47,7 @@
             <!--
                 Payara Micro: a Jakarta EE application server (CDI, JPA, JTA) downloaded by Maven,
                 no installation required.
-                mvn package payara-micro:start  ->  http://localhost:8080/lab6/
+                mvn package payara-micro:start  ->  http://localhost:8080/lab7/
             -->
             <plugin>
                 <groupId>fish.payara.maven.plugins</groupId>
@@ -56,7 +56,7 @@
                 <configuration>
                     <payaraVersion>6.2025.11</payaraVersion>
                     <deployWar>true</deployWar>
-                    <contextRoot>lab6</contextRoot>
+                    <contextRoot>lab7</contextRoot>
                 </configuration>
             </plugin>
         </plugins>

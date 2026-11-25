@@ -4,48 +4,56 @@
                 xmlns:ui="jakarta.faces.facelets"
                 template="/WEB-INF/template/main.xhtml">
 
-    <ui:define name="title">Akwaria</ui:define>
+    <ui:define name="title">#{msg['aquarium.list.title']}</ui:define>
 
     <ui:define name="content">
         <section>
-            <h1>Akwaria</h1>
+            <h1>#{msg['aquarium.list.title']}</h1>
 
-            <p>
-                <h:link outcome="/aquarium/create" value="Dodaj akwarium" styleClass="button"/>
-            </p>
-
-            <h:form rendered="#{not empty aquariumList.aquariums}">
-                <h:dataTable value="#{aquariumList.aquariums}" var="aquarium" styleClass="table">
-                    <h:column>
-                        <f:facet name="header">Nazwa</f:facet>
-                        <h:link outcome="/aquarium/view" value="#{aquarium.name}">
-                            <f:param name="id" value="#{aquarium.id}"/>
-                        </h:link>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">Pojemność</f:facet>
-                        #{aquarium.volumeLiters} l
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">Temperatura</f:facet>
-                        #{aquarium.temperature} °C
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">Woda</f:facet>
-                        #{aquarium.freshwater ? 'słodka' : 'słona'}
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">Akcje</f:facet>
-                        <h:commandButton value="Usuń" action="#{aquariumList.delete(aquarium)}"
-                                         styleClass="button button-danger"
-                                         onclick="return confirm('Usunąć akwarium razem ze wszystkimi rybami?')"/>
-                    </h:column>
-                </h:dataTable>
-            </h:form>
-
-            <ui:fragment rendered="#{empty aquariumList.aquariums}">
-                <p>Brak akwariów.</p>
+            <!-- Only an administrator can add and delete aquariums, so only an administrator sees the buttons. -->
+            <ui:fragment rendered="#{currentUser.admin}">
+                <p>
+                    <h:link outcome="/aquarium/create" value="#{msg['aquarium.add']}" styleClass="button"/>
+                </p>
             </ui:fragment>
+
+            <!-- Deleting is done with AJAX: only this block is rendered again, the page is not reloaded. -->
+            <h:panelGroup id="aquariums" layout="block">
+                <h:form rendered="#{not empty aquariumList.aquariums}">
+                    <h:dataTable value="#{aquariumList.aquariums}" var="aquarium" styleClass="table">
+                        <h:column>
+                            <f:facet name="header">#{msg['aquarium.name']}</f:facet>
+                            <h:link outcome="/aquarium/view" value="#{aquarium.name}">
+                                <f:param name="id" value="#{aquarium.id}"/>
+                            </h:link>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">#{msg['aquarium.volume']}</f:facet>
+                            #{aquarium.volumeLiters} l
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">#{msg['aquarium.temperature']}</f:facet>
+                            #{aquarium.temperature} °C
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">#{msg['aquarium.water']}</f:facet>
+                            #{aquarium.freshwater ? msg['aquarium.water.fresh'] : msg['aquarium.water.salt']}
+                        </h:column>
+                        <h:column rendered="#{currentUser.admin}">
+                            <f:facet name="header">#{msg['table.actions']}</f:facet>
+                            <h:commandButton value="#{msg['action.delete']}" action="#{aquariumList.delete(aquarium)}"
+                                             styleClass="button button-danger"
+                                             onclick="if (!confirm('#{msg['aquarium.delete.confirm']}')) return false;">
+                                <f:ajax execute="@this" render=":aquariums"/>
+                            </h:commandButton>
+                        </h:column>
+                    </h:dataTable>
+                </h:form>
+
+                <ui:fragment rendered="#{empty aquariumList.aquariums}">
+                    <p>#{msg['aquarium.list.empty']}</p>
+                </ui:fragment>
+            </h:panelGroup>
         </section>
     </ui:define>
 

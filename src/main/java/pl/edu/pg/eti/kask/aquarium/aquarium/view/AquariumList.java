@@ -39,10 +39,11 @@ public class AquariumList {
     }
 
     /**
-     * Deletes the aquarium together with its fish and reloads the list (redirect after POST).
+     * Deletes the aquarium together with its fish. Called with AJAX: the list is read again
+     * (lazily, during rendering) and only the table is rendered again.
      */
-    public String delete(Aquarium aquarium) {
+    public void delete(Aquarium aquarium) {
         aquariumService.delete(aquarium.getId());
-        return "/aquarium/list?faces-redirect=true";
+        aquariums = null;
     }
 }

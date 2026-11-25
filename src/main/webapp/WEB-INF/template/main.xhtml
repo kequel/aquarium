@@ -2,8 +2,10 @@
 <!--
     Base template used by every view. Views fill in:
     metadata (view parameters), title (browser tab and heading) and content (page body).
+    All texts come from the message bundle "msg" (messages_pl / messages_en), the language is chosen
+    from the browser's Accept-Language header.
 -->
-<html lang="pl"
+<html lang="#{view.locale.language}"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="jakarta.faces.html"
       xmlns:ui="jakarta.faces.facelets">
@@ -13,20 +15,27 @@
 <h:head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="description" content="Aplikacja do zarządzania akwariami i mieszkającymi w nich rybami."/>
-    <title><ui:insert name="title"/> | Akwarium</title>
+    <meta name="description" content="#{msg['app.description']}"/>
+    <title><ui:insert name="title"/> | #{msg['app.name']}</title>
     <h:outputStylesheet library="css" name="style.css"/>
 </h:head>
 
 <h:body>
     <header class="page-header">
-        <h:graphicImage library="img" name="fish.png" alt="Logo: złota rybka" width="64" height="64"/>
-        <p class="site-name">Akwarium</p>
+        <!-- Each language has its own logo (the picture contains the name of the application). -->
+        <h:graphicImage library="img" name="#{msg['header.logo']}" alt="#{msg['header.logo.alt']}"
+                        width="240" height="64"/>
+        <h:form styleClass="user" rendered="#{not empty currentUser.name}">
+            <span>#{msg['header.loggedInAs']} <strong>#{currentUser.name}</strong></span>
+            <h:commandButton value="#{msg['header.logout']}" action="#{currentUser.logout}"
+                             styleClass="button button-light"/>
+        </h:form>
     </header>
 
-    <nav class="page-nav" aria-label="Nawigacja główna">
+    <nav class="page-nav" aria-label="#{msg['nav.label']}">
         <ul>
-            <li><h:link outcome="/aquarium/list" value="Akwaria"/></li>
+            <li><h:link outcome="/aquarium/list" value="#{msg['nav.aquariums']}"/></li>
+            <li><h:link outcome="/chat/chat" value="#{msg['nav.chat']}"/></li>
         </ul>
     </nav>
 
@@ -36,7 +45,7 @@
     </main>
 
     <footer class="page-footer">
-        <p>Akwarium · Laboratorium Jakarta EE</p>
+        <p>#{msg['footer.text']}</p>
     </footer>
 </h:body>
 </html>

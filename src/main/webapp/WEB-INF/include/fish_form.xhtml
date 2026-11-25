@@ -10,64 +10,65 @@
 
     <h:form styleClass="form">
         <div class="field">
-            <h:outputLabel for="species" value="Gatunek"/>
+            <h:outputLabel for="species" value="#{msg['fish.species']}"/>
             <h:inputText id="species" value="#{bean.fish.species}" required="true"
-                         requiredMessage="Podaj gatunek."/>
+                         requiredMessage="#{msg['fish.species.required']}"/>
         </div>
 
         <div class="field">
-            <h:outputLabel for="lengthCm" value="Długość [cm]"/>
+            <h:outputLabel for="lengthCm" value="#{msg['fish.length.label']}"/>
             <h:inputText id="lengthCm" value="#{bean.fish.lengthCm}" required="true"
                          pt:type="number" pt:min="0.1" pt:step="0.1"
-                         requiredMessage="Podaj długość."
-                         converterMessage="Długość musi być liczbą."
-                         validatorMessage="Długość musi być większa od zera.">
+                         requiredMessage="#{msg['fish.length.required']}"
+                         converterMessage="#{msg['fish.length.number']}"
+                         validatorMessage="#{msg['fish.length.positive']}">
                 <f:validateDoubleRange minimum="0.1"/>
             </h:inputText>
         </div>
 
         <div class="field">
-            <h:outputLabel for="purchaseDate" value="Data i godzina zakupu"/>
+            <h:outputLabel for="purchaseDate" value="#{msg['fish.purchaseDate.label']}"/>
             <h:inputText id="purchaseDate" value="#{bean.fish.purchaseDate}" required="true"
                          pt:type="datetime-local"
-                         requiredMessage="Podaj datę zakupu."
-                         converterMessage="Niepoprawna data zakupu.">
+                         requiredMessage="#{msg['fish.purchaseDate.required']}"
+                         converterMessage="#{msg['fish.purchaseDate.invalid']}">
                 <f:convertDateTime type="localDateTime" pattern="yyyy-MM-dd'T'HH:mm"/>
             </h:inputText>
         </div>
 
         <div class="field">
-            <h:outputLabel for="quantity" value="Liczba sztuk"/>
+            <h:outputLabel for="quantity" value="#{msg['fish.quantity']}"/>
             <h:inputText id="quantity" value="#{bean.fish.quantity}" required="true"
                          pt:type="number" pt:min="1" pt:step="1"
-                         requiredMessage="Podaj liczbę sztuk."
-                         converterMessage="Liczba sztuk musi być liczbą całkowitą."
-                         validatorMessage="Liczba sztuk musi wynosić co najmniej 1.">
+                         requiredMessage="#{msg['fish.quantity.required']}"
+                         converterMessage="#{msg['fish.quantity.number']}"
+                         validatorMessage="#{msg['fish.quantity.min']}">
                 <f:validateLongRange minimum="1"/>
             </h:inputText>
         </div>
 
         <div class="field">
-            <h:outputLabel for="temperament" value="Temperament"/>
+            <h:outputLabel for="temperament" value="#{msg['fish.temperament']}"/>
             <h:selectOneMenu id="temperament" value="#{bean.fish.temperament}" required="true"
-                             requiredMessage="Wybierz temperament.">
-                <f:selectItem itemLabel="— wybierz —" noSelectionOption="true"/>
-                <f:selectItems value="#{bean.temperaments}"/>
+                             requiredMessage="#{msg['fish.temperament.required']}">
+                <f:selectItem itemLabel="#{msg['form.choose']}" noSelectionOption="true"/>
+                <f:selectItems value="#{bean.temperaments}" var="temperament"
+                               itemLabel="#{msg['temperament.' += temperament]}" itemValue="#{temperament}"/>
             </h:selectOneMenu>
         </div>
 
         <div class="field">
-            <h:outputLabel for="aquarium" value="Akwarium"/>
+            <h:outputLabel for="aquarium" value="#{msg['fish.aquarium']}"/>
             <!-- Aquarium objects are turned into ids and back by AquariumConverter. -->
             <h:selectOneMenu id="aquarium" value="#{bean.fish.aquarium}" required="true"
-                             requiredMessage="Wybierz akwarium.">
-                <f:selectItem itemLabel="— wybierz —" noSelectionOption="true"/>
+                             requiredMessage="#{msg['fish.aquarium.required']}">
+                <f:selectItem itemLabel="#{msg['form.choose']}" noSelectionOption="true"/>
                 <f:selectItems value="#{bean.aquariums}" var="aquarium"
                                itemLabel="#{aquarium.name}" itemValue="#{aquarium}"/>
             </h:selectOneMenu>
         </div>
 
-        <h:commandButton value="Zapisz" action="#{bean.save}" styleClass="button"/>
+        <h:commandButton value="#{msg['form.save']}" action="#{bean.save}" styleClass="button"/>
     </h:form>
 
 </ui:composition>

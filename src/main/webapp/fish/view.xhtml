@@ -18,23 +18,23 @@
             <h1>#{fishView.fish.species}</h1>
 
             <dl class="details">
-                <dt>Gatunek</dt>
+                <dt>#{msg['fish.species']}</dt>
                 <dd>#{fishView.fish.species}</dd>
-                <dt>Długość</dt>
+                <dt>#{msg['fish.length']}</dt>
                 <dd>#{fishView.fish.lengthCm} cm</dd>
-                <dt>Data zakupu</dt>
+                <dt>#{msg['fish.purchaseDate']}</dt>
                 <dd>
                     <h:outputText value="#{fishView.fish.purchaseDate}">
                         <f:convertDateTime type="localDateTime" pattern="dd.MM.yyyy, HH:mm"/>
                     </h:outputText>
                 </dd>
-                <dt>Liczba sztuk</dt>
+                <dt>#{msg['fish.quantity']}</dt>
                 <dd>#{fishView.fish.quantity}</dd>
-                <dt>Temperament</dt>
-                <dd>#{fishView.fish.temperament}</dd>
-                <dt>Właściciel</dt>
-                <dd>#{empty fishView.fish.user ? 'brak' : fishView.fish.user.login}</dd>
-                <dt>Akwarium</dt>
+                <dt>#{msg['fish.temperament']}</dt>
+                <dd>#{msg['temperament.' += fishView.fish.temperament]}</dd>
+                <dt>#{msg['fish.owner']}</dt>
+                <dd>#{empty fishView.fish.user ? msg['fish.owner.none'] : fishView.fish.user.login}</dd>
+                <dt>#{msg['fish.aquarium']}</dt>
                 <dd>
                     <h:link outcome="/aquarium/view" value="#{fishView.fish.aquarium.name}">
                         <f:param name="id" value="#{fishView.fish.aquarium.id}"/>
@@ -43,7 +43,7 @@
             </dl>
 
             <p>
-                <h:link outcome="/fish/edit" value="Edytuj" styleClass="button">
+                <h:link outcome="/fish/edit" value="#{msg['action.edit']}" styleClass="button">
                     <f:param name="id" value="#{fishView.fish.id}"/>
                 </h:link>
             </p>

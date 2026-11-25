@@ -43,7 +43,8 @@ public class AquariumView implements Serializable {
     }
 
     /**
-     * Loads the aquarium. Its fish come with it (EAGER relation), no separate query is needed.
+     * Loads the aquarium and the fish the caller may see: an administrator all of them (straight from
+     * the aquarium), a user only own ones (see FishService.findAllByAquarium).
      * Called once, when the page is opened.
      */
     public void init() {
@@ -52,15 +53,15 @@ public class AquariumView implements Serializable {
             HttpErrors.notFound();
             return;
         }
-        fish = aquarium.getFish();
+        fish = fishService.findAllByAquarium(id).orElseThrow();
     }
 
     /**
-     * Deletes a fish and reloads the page (redirect after POST).
+     * Deletes a fish and reloads the list. Called with AJAX, only the fish table is rendered again.
      */
-    public String deleteFish(Fish toDelete) {
+    public void deleteFish(Fish toDelete) {
         fishService.delete(toDelete.getId());
-        return "/aquarium/view?faces-redirect=true&id=" + id;
+        fish = fishService.findAllByAquarium(id).orElseThrow();
     }
 
     public UUID getId() { return id; }

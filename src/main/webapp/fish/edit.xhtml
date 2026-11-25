@@ -10,11 +10,11 @@
         </f:metadata>
     </ui:define>
 
-    <ui:define name="title">Edycja ryby</ui:define>
+    <ui:define name="title">#{msg['fish.edit.title']}</ui:define>
 
     <ui:define name="content">
         <section>
-            <h1>Edycja ryby: #{fishEdit.fish.species}</h1>
+            <h1>#{msg['fish.edit.title']}: #{fishEdit.fish.species}</h1>
             <ui:include src="/WEB-INF/include/fish_form.xhtml">
                 <ui:param name="bean" value="#{fishEdit}"/>
             </ui:include>

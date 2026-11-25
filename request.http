@@ -1,4 +1,4 @@
-@app = http://localhost:8080/lab6/api
+@app = http://localhost:8080/lab7/api
 @idp = http://localhost:9000
 @unknownId = 00000000-0000-0000-0000-000000000000
 @amazonId = 5d1f2b8a-3c47-4e0d-9a61-7b2e8f4c1a01
@@ -10,7 +10,7 @@
 
 # Użytkownicy testowi (hasło = login): admin (ADMIN), kevin, alice, bob (USER).
 # Ryby: kevin - Neon i Skalar (Amazonka), alice - Błazenek i Pokolec (Rafa), bob - Karp (Oczko wodne).
-# Najpierw uruchom oba serwery: lab6 (Payara, port 8080) i identity-provider (port 9000).
+# Najpierw uruchom oba serwery: lab7 (Payara, port 8080) i identity-provider (port 9000).
 # Klikaj po kolei: żądania "Token ..." zapamiętują tokeny, następne z nich korzystają.
 
 ### ================= 1. Dostawca tożsamości (OpenID Connect) =================
@@ -136,7 +136,7 @@ Content-Type: application/json
 
 ### Administrator dodaje akwarium -> 201
 POST {{app}}/aquariums
-Authorization: Bearer {{adminToken}}
+Authorization: Bearer {{kevinToken}}
 Content-Type: application/json
 
 {
@@ -149,18 +149,18 @@ Content-Type: application/json
 > {% client.global.set("newAquariumId", response.body.id); %}
 
 ### Zwykły użytkownik NIE może usunąć akwarium -> 403
-DELETE {{app}}/aquariums/{{newAquariumId}}
+DELETE {{app}}/aquariums/98598e2b-eb6d-49cb-aea7-c2cf4d566439
 Authorization: Bearer {{kevinToken}}
 
 ### Administrator usuwa akwarium -> 204
-DELETE {{app}}/aquariums/{{newAquariumId}}
+DELETE {{app}}/aquariums/98598e2b-eb6d-49cb-aea7-c2cf4d566439
 Authorization: Bearer {{adminToken}}
 
 ### ================= 5. Elementy (ryby) =================
 
 ### Administrator pobiera wszystkie ryby -> 200, 5 ryb
 GET {{app}}/fish
-Authorization: Bearer {{adminToken}}
+Authorization: Bearer {{kevinToken}}
 
 ### Kevin pobiera tylko swoje ryby -> 200, Neon i Skalar
 GET {{app}}/fish
@@ -230,7 +230,7 @@ Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-  "species": "Skalar",
+  "species": "Skalar10",
   "lengthCm": 12.0,
   "purchaseDate": "2024-06-03T10:00:00",
   "quantity": 6,
@@ -246,7 +246,7 @@ DELETE {{app}}/aquariums/{{reefId}}/fish/{{pokolecId}}
 Authorization: Bearer {{adminToken}}
 
 ### Kevin usuwa swoją rybę -> 204
-DELETE {{app}}/aquariums/{{reefId}}/fish/{{kevinFishId}}
+DELETE {{app}}/aquariums/{{reefId}}/fish/a1b2c3d4-0001-4000-8000-000000000001
 Authorization: Bearer {{kevinToken}}
 
 ### Ryby kevina po zmianach -> 200, Neon i Skalar (6 sztuk)

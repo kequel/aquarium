@@ -10,11 +10,11 @@
         </f:metadata>
     </ui:define>
 
-    <ui:define name="title">Nowa ryba</ui:define>
+    <ui:define name="title">#{msg['fish.create.title']}</ui:define>
 
     <ui:define name="content">
         <section>
-            <h1>Nowa ryba</h1>
+            <h1>#{msg['fish.create.title']}</h1>
             <ui:include src="/WEB-INF/include/fish_form.xhtml">
                 <ui:param name="bean" value="#{fishCreate}"/>
             </ui:include>

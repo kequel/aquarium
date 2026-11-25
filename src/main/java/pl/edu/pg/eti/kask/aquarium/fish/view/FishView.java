@@ -4,6 +4,7 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import pl.edu.pg.eti.kask.aquarium.fish.entity.Fish;
+import pl.edu.pg.eti.kask.aquarium.exception.AccessDeniedException;
 import pl.edu.pg.eti.kask.aquarium.fish.service.FishService;
 import pl.edu.pg.eti.kask.aquarium.view.HttpErrors;
 
@@ -35,7 +36,13 @@ public class FishView {
     }
 
     public void init() {
-        fish = id == null ? null : fishService.find(id).orElse(null);
+        try {
+            fish = id == null ? null : fishService.find(id).orElse(null);
+        } catch (AccessDeniedException ex) {
+            // Direct link to somebody else's fish: only the owner and an administrator may open it.
+            HttpErrors.forbidden();
+            return;
+        }
         if (fish == null) {
             HttpErrors.notFound();
         }

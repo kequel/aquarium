@@ -14,19 +14,38 @@
     </context-param>
 
     <!--
-        Identity provider (separate Spring Boot project, identity-provider folder). Tokens must be issued by it
-        and signed with one of the keys published at the JWKS address.
+        Secured pages. Every page requires a logged-in user (ADMIN or USER); somebody who is not logged in is sent
+        to the login form of the identity provider (OpenID Connect, see security/OpenIdConfig.java).
+        Adding an aquarium is only for administrators (others get 403).
+        The REST API is not covered here, its methods are secured with @RolesAllowed.
     -->
-    <context-param>
-        <param-name>jwtIssuer</param-name>
-        <param-value>http://localhost:9000</param-value>
-    </context-param>
-    <context-param>
-        <param-name>jwtJwksUri</param-name>
-        <param-value>http://localhost:9000/oauth2/jwks</param-value>
-    </context-param>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Views</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>ADMIN</role-name>
+            <role-name>USER</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Adding aquariums</web-resource-name>
+            <url-pattern>/aquarium/create.xhtml</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>ADMIN</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>REST API</web-resource-name>
+            <url-pattern>/api/*</url-pattern>
+        </web-resource-collection>
+    </security-constraint>
 
-    <!-- Roles used in @RolesAllowed, the same as the groups in the token. -->
+    <!-- Roles used in @RolesAllowed and above, the same as the groups in the token. -->
     <security-role>
         <role-name>ADMIN</role-name>
     </security-role>
@@ -60,6 +79,12 @@
     <context-param>
         <param-name>com.sun.faces.defaultResourceMaxAge</param-name>
         <param-value>0</param-value>
+    </context-param>
+
+    <!-- WebSocket endpoint of <f:websocket> (used by the chat to receive messages). -->
+    <context-param>
+        <param-name>jakarta.faces.ENABLE_WEBSOCKET_ENDPOINT</param-name>
+        <param-value>true</param-value>
     </context-param>
 
     <!-- Jakarta Faces: every *.xhtml page is processed by the Faces servlet. -->

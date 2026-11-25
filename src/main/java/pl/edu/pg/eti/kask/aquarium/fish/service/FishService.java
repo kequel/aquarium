@@ -11,6 +11,7 @@ import pl.edu.pg.eti.kask.aquarium.exception.AccessDeniedException;
 import pl.edu.pg.eti.kask.aquarium.exception.NotFoundException;
 import pl.edu.pg.eti.kask.aquarium.fish.entity.Fish;
 import pl.edu.pg.eti.kask.aquarium.fish.repository.FishRepository;
+import pl.edu.pg.eti.kask.aquarium.logging.LogOperation;
 import pl.edu.pg.eti.kask.aquarium.security.UserRoles;
 import pl.edu.pg.eti.kask.aquarium.user.entity.User;
 import pl.edu.pg.eti.kask.aquarium.user.repository.UserRepository;
@@ -101,6 +102,7 @@ public class FishService {
      * @throws NotFoundException if the aquarium does not exist
      */
     @RolesAllowed({UserRoles.ADMIN, UserRoles.USER})
+    @LogOperation
     public void create(Fish fish) {
         Aquarium aquarium = aquariumRepository.find(fish.getAquarium().getId())
                 .orElseThrow(() -> new NotFoundException("Aquarium " + fish.getAquarium().getId() + " not found"));
@@ -121,6 +123,7 @@ public class FishService {
      * @throws AccessDeniedException if the fish belongs to another user
      */
     @RolesAllowed({UserRoles.ADMIN, UserRoles.USER})
+    @LogOperation
     public void update(Fish fish) {
         Fish current = fishRepository.find(fish.getId())
                 .orElseThrow(() -> new NotFoundException("Fish " + fish.getId() + " not found"));
@@ -141,6 +144,7 @@ public class FishService {
      * @throws AccessDeniedException if the fish belongs to another user
      */
     @RolesAllowed({UserRoles.ADMIN, UserRoles.USER})
+    @LogOperation
     public void delete(UUID id) {
         fishRepository.find(id).ifPresent(fish -> {
             checkOwner(fish);

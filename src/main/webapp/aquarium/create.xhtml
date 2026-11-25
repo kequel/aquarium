@@ -5,46 +5,46 @@
                 xmlns:pt="jakarta.faces.passthrough"
                 template="/WEB-INF/template/main.xhtml">
 
-    <ui:define name="title">Nowe akwarium</ui:define>
+    <ui:define name="title">#{msg['aquarium.create.title']}</ui:define>
 
     <ui:define name="content">
         <section>
-            <h1>Nowe akwarium</h1>
+            <h1>#{msg['aquarium.create.title']}</h1>
 
             <h:form styleClass="form">
                 <div class="field">
-                    <h:outputLabel for="name" value="Nazwa"/>
+                    <h:outputLabel for="name" value="#{msg['aquarium.name']}"/>
                     <h:inputText id="name" value="#{aquariumCreate.aquarium.name}" required="true"
-                                 requiredMessage="Podaj nazwę."/>
+                                 requiredMessage="#{msg['aquarium.name.required']}"/>
                 </div>
 
                 <div class="field">
-                    <h:outputLabel for="volumeLiters" value="Pojemność [l]"/>
+                    <h:outputLabel for="volumeLiters" value="#{msg['aquarium.volume.label']}"/>
                     <h:inputText id="volumeLiters" value="#{aquariumCreate.aquarium.volumeLiters}" required="true"
                                  pt:type="number" pt:min="1" pt:step="1"
-                                 requiredMessage="Podaj pojemność."
-                                 converterMessage="Pojemność musi być liczbą całkowitą."
-                                 validatorMessage="Pojemność musi wynosić co najmniej 1 l.">
+                                 requiredMessage="#{msg['aquarium.volume.required']}"
+                                 converterMessage="#{msg['aquarium.volume.number']}"
+                                 validatorMessage="#{msg['aquarium.volume.min']}">
                         <f:validateLongRange minimum="1"/>
                     </h:inputText>
                 </div>
 
                 <div class="field">
-                    <h:outputLabel for="temperature" value="Temperatura wody [°C]"/>
+                    <h:outputLabel for="temperature" value="#{msg['aquarium.temperature.label']}"/>
                     <h:inputText id="temperature" value="#{aquariumCreate.aquarium.temperature}" required="true"
                                  pt:type="number" pt:step="0.1"
-                                 requiredMessage="Podaj temperaturę."
-                                 converterMessage="Temperatura musi być liczbą."/>
+                                 requiredMessage="#{msg['aquarium.temperature.required']}"
+                                 converterMessage="#{msg['aquarium.temperature.number']}"/>
                 </div>
 
                 <div class="field">
                     <label class="checkbox">
                         <h:selectBooleanCheckbox value="#{aquariumCreate.aquarium.freshwater}"/>
-                        Woda słodka
+                        #{msg['aquarium.water.freshLabel']}
                     </label>
                 </div>
 
-                <h:commandButton value="Zapisz" action="#{aquariumCreate.save}" styleClass="button"/>
+                <h:commandButton value="#{msg['form.save']}" action="#{aquariumCreate.save}" styleClass="button"/>
             </h:form>
         </section>
     </ui:define>

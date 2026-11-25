@@ -7,6 +7,7 @@ import pl.edu.pg.eti.kask.aquarium.aquarium.entity.Aquarium;
 import pl.edu.pg.eti.kask.aquarium.aquarium.service.AquariumService;
 import pl.edu.pg.eti.kask.aquarium.fish.entity.Fish;
 import pl.edu.pg.eti.kask.aquarium.fish.entity.Temperament;
+import pl.edu.pg.eti.kask.aquarium.exception.AccessDeniedException;
 import pl.edu.pg.eti.kask.aquarium.fish.service.FishService;
 import pl.edu.pg.eti.kask.aquarium.view.HttpErrors;
 
@@ -47,7 +48,13 @@ public class FishEdit implements Serializable {
      * Loads the fish to edit. Called once, when the form is opened.
      */
     public void init() {
-        fish = id == null ? null : fishService.find(id).orElse(null);
+        try {
+            fish = id == null ? null : fishService.find(id).orElse(null);
+        } catch (AccessDeniedException ex) {
+            // Direct link to somebody else's fish: only the owner and an administrator may open it.
+            HttpErrors.forbidden();
+            return;
+        }
         if (fish == null) {
             HttpErrors.notFound();
         }

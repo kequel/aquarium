@@ -1,0 +1,59 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="jakarta.faces.html"
+                xmlns:f="jakarta.faces.core"
+                xmlns:ui="jakarta.faces.facelets"
+                template="/WEB-INF/template/main.xhtml">
+
+    <ui:define name="title">#{msg['chat.title']}</ui:define>
+
+    <ui:define name="content">
+        <script>
+            // Adds a received message to the list. Defined before the websocket tag, which calls it.
+            // textContent is used, so a message cannot inject HTML.
+            function onChatMessage(message) {
+                var item = document.createElement('li');
+                if (message.to) {
+                    item.className = 'chat-private';
+                }
+                var header = document.createElement('span');
+                header.className = 'chat-meta';
+                header.textContent = message.time + ' ' + message.from
+                    + (message.to ? ' → ' + message.to + ' (#{msg['chat.private']})' : '') + ': ';
+                item.appendChild(header);
+                item.appendChild(document.createTextNode(message.text));
+                document.getElementById('chat-messages').appendChild(item);
+            }
+        </script>
+        <section class="chat">
+            <h1>#{msg['chat.title']}</h1>
+
+            <!-- Received messages, added by the onChatMessage function above. -->
+            <ol id="chat-messages" class="chat-messages" aria-live="polite"></ol>
+
+            <!-- Sending: an AJAX request, the page is not reloaded, only the form is rendered again. -->
+            <h:form id="chat-form" styleClass="form">
+                <div class="field">
+                    <h:outputLabel for="recipient" value="#{msg['chat.to']}"/>
+                    <h:selectOneMenu id="recipient" value="#{chatView.recipient}">
+                        <f:selectItem itemLabel="#{msg['chat.everybody']}" itemValue=""/>
+                        <f:selectItems value="#{chatView.users}"/>
+                    </h:selectOneMenu>
+                </div>
+                <div class="field">
+                    <h:outputLabel for="text" value="#{msg['chat.message']}"/>
+                    <h:inputText id="text" value="#{chatView.text}" required="true"
+                                 requiredMessage="#{msg['chat.message.required']}"/>
+                </div>
+                <h:commandButton value="#{msg['chat.send']}" action="#{chatView.send}" styleClass="button">
+                    <f:ajax execute="@form" render="@form"/>
+                </h:commandButton>
+                <h:message for="text" styleClass="error"/>
+            </h:form>
+
+            <!-- Receiving: a WebSocket of the logged-in user on the channel "chat" (see ChatMessenger). -->
+            <f:websocket channel="chat" user="#{currentUser.name}" onmessage="onChatMessage"/>
+        </section>
+
+    </ui:define>
+
+</ui:composition>
